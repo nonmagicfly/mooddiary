@@ -24,7 +24,7 @@ services:
       - mooddiary
 
   keycloak:
-    image: keycloak/keycloak:24
+    image: keycloak/keycloak:23
     container_name: mooddiary-keycloak
     restart: unless-stopped
     command: ["start", "--import-realm"]
