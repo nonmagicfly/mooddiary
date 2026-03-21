@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Journal theme base */
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+}
+
+/* Paper card with folded corner effect */
+@layer components {
+  .journal-card {
+    @apply rounded-sm border border-journal-line bg-journal-paper shadow-paper;
+  }
+  .dark .journal-card {
+    @apply border-journalDark-line bg-journalDark-paper shadow-paperDark;
+  }
+  .journal-btn-primary {
+    @apply rounded-sm border border-journal-accent bg-journal-accent px-4 py-2 font-medium text-white transition-colors hover:bg-journal-accentHover;
+  }
+  .dark .journal-btn-primary {
+    @apply border-journalDark-accent bg-journalDark-accent hover:bg-journalDark-accentHover;
+  }
+  .journal-btn-secondary {
+    @apply rounded-sm border border-journal-line bg-transparent px-4 py-2 font-medium text-journal-ink transition-colors hover:bg-journal-fold/50;
+  }
+  .dark .journal-btn-secondary {
+    @apply border-journalDark-line text-journalDark-ink hover:bg-journalDark-fold/50;
+  }
+  .journal-input {
+    @apply rounded-sm border border-journal-line bg-journal-paper px-3 py-2 text-journal-ink;
+  }
+  .dark .journal-input {
+    @apply border-journalDark-line bg-journalDark-paper text-journalDark-ink;
+  }
+  .journal-divider {
+    @apply border-t border-journal-line;
+  }
+  .dark .journal-divider {
+    @apply border-journalDark-line;
+  }
+}
+
+/* iPhone safe area insets (notch, home indicator) */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Mobile nav touch targets */
+.mobile-nav a {
+  min-height: 48px;
+  min-width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

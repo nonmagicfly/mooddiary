@@ -1,0 +1,61 @@
+services:
+  keycloak:
+    image: keycloak/keycloak:latest
+    container_name: mooddiary-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: "8180"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/mooddiary-realm.json:/opt/keycloak/data/import/mooddiary-realm.json
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:15
+    container_name: mooddiary-db
+    environment:
+      POSTGRES_DB: mooddiary
+      POSTGRES_USER: mooddiary
+      POSTGRES_PASSWORD: mooddiary
+    ports:
+      - "5432:5432"
+    volumes:
+      - mooddiary_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mooddiary -d mooddiary"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: mooddiary-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: mooddiary
+      DB_USER: mooddiary
+      DB_PASSWORD: mooddiary
+      SERVER_PORT: 8080
+      KEYCLOAK_JWKS_URI: http://host.docker.internal:8180/realms/mooddiary/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/mooddiary
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    ports:
+      - "8080:8080"
+    volumes:
+      - mooddiary_photos:/app/data/photos
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  mooddiary_pgdata:
+  mooddiary_photos:

@@ -1,0 +1,19 @@
+# Сборка frontend и Nginx для production
+# Build args: VITE_API_BASE_URL, VITE_KEYCLOAK_ISSUER_URI
+
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
+
+ARG VITE_API_BASE_URL=
+ARG VITE_KEYCLOAK_ISSUER_URI=https://example.com/realms/mooddiary
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_KEYCLOAK_ISSUER_URI=$VITE_KEYCLOAK_ISSUER_URI
+
+COPY src/main/web/package.json src/main/web/package-lock.json ./
+RUN npm ci
+
+COPY src/main/web/ ./
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=frontend-build /app/dist /usr/share/nginx/html

@@ -1,0 +1,34 @@
+{
+  "realm": "mooddiary",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "clients": [
+    {
+      "clientId": "mooddiary-web",
+      "name": "MoodDiary Web",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:5173/diary/login",
+        "http://localhost:5173/silent-check-sso.html",
+        "${PROTOCOL}://${DOMAIN}/*",
+        "${PROTOCOL}://${DOMAIN}/diary/login",
+        "${PROTOCOL}://${DOMAIN}/silent-check-sso.html"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "${PROTOCOL}://${DOMAIN}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": []
+}

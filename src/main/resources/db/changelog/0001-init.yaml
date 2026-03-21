@@ -1,0 +1,427 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-create-pg-extensions
+      author: mooddiary
+      changes:
+        - sql:
+            dbms: postgresql
+            splitStatements: false
+            stripComments: true
+            sql: "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
+  - changeSet:
+      id: 0002-create-users
+      author: mooddiary
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_users
+                    nullable: false
+              - column:
+                  name: keycloak_subject
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+
+        - addNotNullConstraint:
+            tableName: users
+            columnName: created_at
+            columnDataType: timestamptz
+  - changeSet:
+      id: 0003-create-diary-entries-and-tags
+      author: mooddiary
+      changes:
+        - createTable:
+            tableName: diary_entries
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_diary_entries
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entry_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mood_score
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: energy_score
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: productivity_score
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stress_score
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sleep_quality_score
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: note
+                  type: text
+              - column:
+                  name: is_completed
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_entries
+            baseColumnNames: user_id
+            constraintName: fk_diary_entries_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - addUniqueConstraint:
+            tableName: diary_entries
+            columnNames: user_id, entry_date
+            constraintName: uq_diary_entries_user_entry_date
+
+        - sql:
+            dbms: postgresql
+            sql: "ALTER TABLE diary_entries ADD CONSTRAINT ck_diary_entries_mood_score CHECK (mood_score BETWEEN 1 AND 10);"
+        - sql:
+            dbms: postgresql
+            sql: "ALTER TABLE diary_entries ADD CONSTRAINT ck_diary_entries_energy_score CHECK (energy_score BETWEEN 1 AND 10);"
+        - sql:
+            dbms: postgresql
+            sql: "ALTER TABLE diary_entries ADD CONSTRAINT ck_diary_entries_productivity_score CHECK (productivity_score BETWEEN 1 AND 10);"
+        - sql:
+            dbms: postgresql
+            sql: "ALTER TABLE diary_entries ADD CONSTRAINT ck_diary_entries_stress_score CHECK (stress_score BETWEEN 1 AND 10);"
+        - sql:
+            dbms: postgresql
+            sql: "ALTER TABLE diary_entries ADD CONSTRAINT ck_diary_entries_sleep_quality_score CHECK (sleep_quality_score BETWEEN 1 AND 10);"
+
+        - createTable:
+            tableName: tags
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_tags
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: color
+                  type: varchar(64)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+
+        - addForeignKeyConstraint:
+            baseTableName: tags
+            baseColumnNames: user_id
+            constraintName: fk_tags_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - addUniqueConstraint:
+            tableName: tags
+            columnNames: user_id, name
+            constraintName: uq_tags_user_name
+
+        - createTable:
+            tableName: symptoms
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_symptoms
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+
+        - addForeignKeyConstraint:
+            baseTableName: symptoms
+            baseColumnNames: user_id
+            constraintName: fk_symptoms_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - addUniqueConstraint:
+            tableName: symptoms
+            columnNames: user_id, name
+            constraintName: uq_symptoms_user_name
+
+        - createTable:
+            tableName: diary_entry_tags
+            columns:
+              - column:
+                  name: diary_entry_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_diary_entry_tags
+              - column:
+                  name: tag_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_entry_tags
+            baseColumnNames: diary_entry_id
+            constraintName: fk_diary_entry_tags_entry
+            referencedTableName: diary_entries
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_entry_tags
+            baseColumnNames: tag_id
+            constraintName: fk_diary_entry_tags_tag
+            referencedTableName: tags
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - createTable:
+            tableName: diary_entry_symptoms
+            columns:
+              - column:
+                  name: diary_entry_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_diary_entry_symptoms
+              - column:
+                  name: symptom_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_entry_symptoms
+            baseColumnNames: diary_entry_id
+            constraintName: fk_diary_entry_symptoms_entry
+            referencedTableName: diary_entries
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_entry_symptoms
+            baseColumnNames: symptom_id
+            constraintName: fk_diary_entry_symptoms_symptom
+            referencedTableName: symptoms
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 0004-create-photos-and-audit
+      author: mooddiary
+      changes:
+        - createTable:
+            tableName: photos
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_photos
+                    nullable: false
+              - column:
+                  name: entry_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_path
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content_type
+                  type: varchar(128)
+              - column:
+                  name: size
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: photos
+            baseColumnNames: entry_id
+            constraintName: fk_photos_entry
+            referencedTableName: diary_entries
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - createTable:
+            tableName: audit_log
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_audit_log
+                    nullable: false
+              - column:
+                  name: performed_by
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: action_type
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_type
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: occurred_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: client_ip
+                  type: varchar(64)
+              - column:
+                  name: forwarded_headers
+                  type: text
+              - column:
+                  name: user_agent
+                  type: text
+
+        - addForeignKeyConstraint:
+            baseTableName: audit_log
+            baseColumnNames: performed_by
+            constraintName: fk_audit_log_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: audit_log
+            indexName: idx_audit_log_occurred_at
+            columns:
+              - column:
+                  name: occurred_at
+
+  - changeSet:
+      id: 0005-add-telegram-chat-id-to-users
+      author: mooddiary
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: telegram_chat_id
+                  type: varchar(64)
+

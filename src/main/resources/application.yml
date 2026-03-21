@@ -1,0 +1,64 @@
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: mooddiary
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:mooddiary}}
+    username: ${DB_USER:mooddiary}
+    password: ${DB_PASSWORD:mooddiary}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    enabled: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    date-format: yyyy-MM-dd
+  servlet:
+    multipart:
+      max-file-size: ${MAX_UPLOAD_FILE_SIZE:10MB}
+      max-request-size: ${MAX_UPLOAD_REQUEST_SIZE:20MB}
+  security:
+    oauth2:
+      resourceserver:
+        # JwtDecoder — JwtDecoderConfiguration (JWKS с host.docker.internal, issuer localhost)
+
+logging:
+  level:
+    root: WARN
+    com.mooddiary: INFO
+    org.springframework: WARN
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# TELEGRAM_BOT_TOKEN — токен бота для отправки саммари в Telegram (опционально)
+# telegram-chat-id настраивается пользователем в Настройках
+
+mooddiary:
+  upload:
+    photo:
+      max-file-size-bytes: ${MAX_PHOTO_FILE_SIZE_BYTES:10485760}
+      storage-dir: ${PHOTO_STORAGE_DIR:./data/photos}
+
