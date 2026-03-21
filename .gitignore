@@ -1,7 +1,7 @@
 # Build
 build/
 .gradle/
-out/
+/out/
 dist/
 
 # IDE
