@@ -21,10 +21,14 @@ export PROTOCOL=${PROTOCOL:-https}
 envsubst '${DOMAIN} ${PROTOCOL}' < keycloak-realm.json.template > keycloak-realm.json
 
 echo "Деплой MoodDiary на $DOMAIN..."
-docker compose -f docker-compose.prod.yml up -d --build
+if docker compose version &>/dev/null; then
+  docker compose -f docker-compose.prod.yml up -d --build
+else
+  docker-compose -f docker-compose.prod.yml up -d --build
+fi
 
 echo ""
-echo "Готово! Приложение: http://${DOMAIN}"
-echo "Keycloak Admin: https://${DOMAIN}/admin (логин: admin)"
+echo "Готово! Приложение: ${PROTOCOL}://${DOMAIN}"
+echo "Keycloak Admin: ${PROTOCOL}://${DOMAIN}/admin (логин: admin)"
 echo ""
-echo "Для HTTPS настройте SSL (Let's Encrypt) и обновите nginx.conf"
+[[ "$PROTOCOL" == "http" ]] && echo "Для HTTPS настройте SSL (Let's Encrypt) и обновите nginx.conf"
