@@ -47,7 +47,7 @@ export KEYCLOAK_ADMIN_PASSWORD=your_keycloak_admin_password
 export KEYCLOAK_DB_PASSWORD=your_keycloak_db_password
 
 envsubst '${DOMAIN}' < keycloak-realm.json.template > keycloak-realm.json
-docker compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
 ### 4. Первый вход
@@ -70,7 +70,7 @@ cp /etc/letsencrypt/live/mooddiary.yourdomain.com/privkey.pem deploy/ssl/
 ```
 
 4. Раскомментируйте HTTPS-блок в `deploy/nginx.conf` и укажите пути к сертификатам
-5. Перезапустите: `docker compose -f deploy/docker-compose.prod.yml restart nginx`
+5. Перезапустите: `docker-compose -f deploy/docker-compose.prod.yml restart nginx`
 
 ## Переменные окружения
 
@@ -94,7 +94,7 @@ PostgreSQL, Keycloak и Backend работают во внутренней се�
 ```bash
 cd deploy
 git pull  # или скопируйте обновлённые файлы
-source .env && docker compose -f docker-compose.prod.yml up -d --build
+source .env && docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
 ## Резервное копирование

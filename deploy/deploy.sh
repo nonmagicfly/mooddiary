@@ -21,11 +21,7 @@ export PROTOCOL=${PROTOCOL:-https}
 envsubst '${DOMAIN} ${PROTOCOL}' < keycloak-realm.json.template > keycloak-realm.json
 
 echo "Деплой MoodDiary на $DOMAIN..."
-if docker compose version &>/dev/null; then
-  docker compose -f docker-compose.prod.yml up -d --build
-else
-  docker-compose -f docker-compose.prod.yml up -d --build
-fi
+docker-compose -f docker-compose.prod.yml up -d --build
 
 echo ""
 echo "Готово! Приложение: ${PROTOCOL}://${DOMAIN}"
