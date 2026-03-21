@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { KeycloakProvider, useKeycloak } from './auth/KeycloakContext'
+import { DefaultRedirect, ProtectedRoute } from './auth/ProtectedRoute'
 import DiaryEntryPage from './pages/DiaryEntryPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import DiaryHistoryPage from './pages/DiaryHistoryPage'
@@ -144,16 +145,16 @@ function AppShell() {
 
           <main className="flex-1 overflow-auto p-4 pb-20 md:pb-4">
             <Routes>
-              <Route path="/diary/entry/new" element={<DiaryEntryPage mode="create" />} />
-              <Route path="/diary/entry/:id" element={<DiaryEntryPage mode="edit" />} />
-              <Route path="/diary/analytics" element={<AnalyticsPage />} />
-              <Route path="/diary/history" element={<DiaryHistoryPage />} />
-              <Route path="/diary/dashboard" element={<DashboardPage />} />
-              <Route path="/diary/tags" element={<TagsPage />} />
-              <Route path="/diary/symptoms" element={<SymptomsPage />} />
-              <Route path="/diary/settings" element={<SettingsPage />} />
               <Route path="/diary/login" element={<LoginPage />} />
-              <Route path="*" element={<Navigate to="/diary/entry/new" replace />} />
+              <Route path="/diary/entry/new" element={<ProtectedRoute><DiaryEntryPage mode="create" /></ProtectedRoute>} />
+              <Route path="/diary/entry/:id" element={<ProtectedRoute><DiaryEntryPage mode="edit" /></ProtectedRoute>} />
+              <Route path="/diary/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              <Route path="/diary/history" element={<ProtectedRoute><DiaryHistoryPage /></ProtectedRoute>} />
+              <Route path="/diary/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/diary/tags" element={<ProtectedRoute><TagsPage /></ProtectedRoute>} />
+              <Route path="/diary/symptoms" element={<ProtectedRoute><SymptomsPage /></ProtectedRoute>} />
+              <Route path="/diary/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="*" element={<DefaultRedirect />} />
             </Routes>
           </main>
 
