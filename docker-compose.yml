@@ -2,6 +2,7 @@ services:
   keycloak:
     image: keycloak/keycloak:latest
     container_name: mooddiary-keycloak
+    profiles: ["keycloak"]
     command: ["start-dev", "--import-realm"]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
@@ -46,6 +47,10 @@ services:
       DB_USER: mooddiary
       DB_PASSWORD: mooddiary
       SERVER_PORT: 8080
+      MOODDIARY_DEV_AUTH_ENABLED: "true"
+      MOODDIARY_DEV_AUTH_USERNAME: user
+      MOODDIARY_DEV_AUTH_PASSWORD: user
+      MOODDIARY_DEV_AUTH_SUBJECT: user
       KEYCLOAK_JWKS_URI: http://host.docker.internal:8180/realms/mooddiary/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/mooddiary
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}

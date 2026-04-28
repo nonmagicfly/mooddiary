@@ -1,0 +1,14 @@
+C4Component
+title MoodDiary — компоненты Web SPA (логические)
+
+Container_Boundary(spa, "Web SPA") {
+  Component(pages, "Страницы", "React", "Dashboard, DiaryEntry, History, Analytics, Tags, Symptoms, Settings, Login")
+  Component(auth, "Auth", "keycloak-js", "KeycloakProvider, токены, PKCE, silent-check-sso")
+  Component(api_client, "API client", "fetch", "Вызовы /api с Bearer")
+  Component(router, "Маршрутизация", "react-router-dom", "ProtectedRoute, редиректы")
+}
+
+Rel(pages, auth, "", "")
+Rel(pages, api_client, "", "")
+Rel(pages, router, "", "")
+Rel(api_client, auth, "Bearer из сессии Keycloak / storage", "")

@@ -80,9 +80,9 @@ class UpdateTagUseCaseImplTest {
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
         when(tagRepositoryPort.findByIdAndUserId(tagId, userId)).thenReturn(Optional.of(existing));
-        when(tagRepositoryPort.existsByUserIdAndName(userId, "work")).thenReturn(true);
+        when(tagRepositoryPort.existsByUserIdAndName(userId, "life")).thenReturn(true);
 
-        assertThrows(ConflictAppException.class, () -> useCase.execute(keycloakSubject, tagId, new TagUpdateCommand("work", null)));
+        assertThrows(ConflictAppException.class, () -> useCase.execute(keycloakSubject, tagId, new TagUpdateCommand("life", null)));
     }
 
     @Test

@@ -59,8 +59,8 @@ class AnalyticsCalculatorImplTest {
 
         List<DiaryEntryAnalyticsMetric> metrics = List.of(
                 new DiaryEntryAnalyticsMetric(2, 1, 2, 1, 1),
-                new DiaryEntryAnalyticsMetric(4, 2, 4, 2, 1),
-                new DiaryEntryAnalyticsMetric(6, 3, 6, 3, 1)
+                new DiaryEntryAnalyticsMetric(4, 2, 4, 1, 1),
+                new DiaryEntryAnalyticsMetric(6, 3, 6, 1, 1)
         );
 
         MoodAnalyticsResponse response = calculator.calculate(from, to, metrics, List.of(), List.of());

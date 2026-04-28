@@ -78,7 +78,7 @@ class UploadDiaryEntryPhotosUseCaseImplTest {
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
         when(diaryEntryRepositoryPort.findByIdAndUserId(diaryEntryId, userId)).thenReturn(Optional.of(entry));
-        when(config.maxFileSizeBytes()).thenReturn(1024L);
+        when(config.getMaxFileSizeBytes()).thenReturn(1024L);
 
         byte[] bytes = new byte[] {1, 2, 3};
         PhotoUploadFileCommand file = new PhotoUploadFileCommand(
@@ -116,8 +116,6 @@ class UploadDiaryEntryPhotosUseCaseImplTest {
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
         when(diaryEntryRepositoryPort.findByIdAndUserId(diaryEntryId, userId)).thenReturn(Optional.empty());
 
-        when(config.maxFileSizeBytes()).thenReturn(1024L);
-
         byte[] bytes = new byte[] {1, 2, 3};
         PhotoUploadFileCommand file = new PhotoUploadFileCommand("a.png", "image/png", bytes.length, bytes);
         UploadDiaryEntryPhotosCommand command = new UploadDiaryEntryPhotosCommand(List.of(file));
@@ -150,7 +148,7 @@ class UploadDiaryEntryPhotosUseCaseImplTest {
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
         when(diaryEntryRepositoryPort.findByIdAndUserId(diaryEntryId, userId)).thenReturn(Optional.of(entry));
-        when(config.maxFileSizeBytes()).thenReturn(2L);
+        when(config.getMaxFileSizeBytes()).thenReturn(2L);
 
         byte[] bytes = new byte[] {1, 2, 3};
         PhotoUploadFileCommand file = new PhotoUploadFileCommand("a.png", "image/png", bytes.length, bytes);

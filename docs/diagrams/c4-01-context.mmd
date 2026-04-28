@@ -1,0 +1,15 @@
+C4Context
+title MoodDiary — контекст системы
+
+Person(user, "Пользователь", "Ведёт дневник настроения в браузере")
+Person(idp_admin, "Администратор IdP", "Управляет realm и пользователями в Keycloak")
+
+System(mooddiary, "MoodDiary", "Веб-приложение: дневник, аналитика, фото, настройки")
+
+System_Ext(keycloak, "Keycloak", "OpenID Connect / OAuth2, realm mooddiary")
+System_Ext(telegram, "Telegram Bot API", "Опционально: отправка дневного саммари")
+
+Rel(user, mooddiary, "HTTPS (браузер)", "SPA + API")
+Rel(idp_admin, keycloak, "HTTPS", "Админ-консоль /admin")
+Rel(mooddiary, keycloak, "OIDC", "Authorization Code + PKCE; JWT для API")
+Rel(mooddiary, telegram, "HTTPS", "Если задан TELEGRAM_BOT_TOKEN")

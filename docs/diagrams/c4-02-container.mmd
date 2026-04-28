@@ -1,0 +1,23 @@
+C4Container
+title MoodDiary — контейнеры (production)
+
+Person(user, "Пользователь", "")
+
+System_Boundary(mood, "MoodDiary") {
+  Container(spa, "Web SPA", "React, TypeScript, Vite", "UI, keycloak-js, маршрутизация")
+  Container(nginx, "Reverse proxy", "Nginx", "Статика SPA, /api → backend, /realms /admin → Keycloak")
+  Container(api, "Backend API", "Java 17, Spring Boot", "REST, OAuth2 Resource Server, JPA, Liquibase")
+  Container(kc, "Keycloak", "Keycloak (Quarkus)", "Realm mooddiary, пользователи OIDC")
+  ContainerDb(pg, "PostgreSQL", "PostgreSQL 15", "Данные приложения и БД Keycloak")
+  Container(fs, "Файловое хранилище", "Том Docker", "Бинарные файлы фото (PHOTO_STORAGE_DIR)")
+}
+
+Rel(user, nginx, "HTTPS :80/:443", "")
+Rel(nginx, spa, "Статика, index.html", "")
+Rel(nginx, api, "/api", "HTTP")
+Rel(nginx, kc, "/realms, /admin", "HTTP")
+Rel(api, pg, "JDBC", "TCP 5432")
+Rel(api, fs, "локальная ФС", "")
+Rel(kc, pg, "JDBC", "БД keycloak")
+Rel(spa, kc, "OIDC в браузере", "HTTPS через nginx")
+Rel(spa, nginx, "/api", "Bearer JWT")

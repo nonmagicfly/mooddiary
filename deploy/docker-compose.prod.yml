@@ -24,14 +24,14 @@ services:
       - mooddiary
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:25.0
     container_name: mooddiary-keycloak
     restart: unless-stopped
     command: ["start", "--import-realm"]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Set KEYCLOAK_ADMIN_PASSWORD}
-      KC_HOSTNAME: ${DOMAIN:?Set DOMAIN}
+      KC_HOSTNAME: ${PROTOCOL:-https}://${DOMAIN:?Set DOMAIN}
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
       KC_PROXY: edge

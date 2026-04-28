@@ -1,0 +1,16 @@
+C4Component
+title MoodDiary — компоненты Backend API
+
+Container_Boundary(api, "Backend API") {
+  Component(controllers, "HTTP adapters", "Spring MVC", "REST: DiaryEntry, Tag, Symptom, Photo, Analytics, Settings, Summary")
+  Component(security, "Security", "Spring Security", "OAuth2 Resource Server, JWT")
+  Component(app, "Application layer", "Java", "Use cases, порты, UserIdentity, Audit, Analytics calculator")
+  Component(domain, "Domain", "Java", "DiaryEntry, Tag, Symptom, инварианты")
+  Component(infra, "Infrastructure", "Spring Data JPA, etc.", "JPA-адаптеры портов, Liquibase, LocalFileStorage, Telegram client")
+}
+
+Rel(controllers, security, "использует", "")
+Rel(controllers, app, "вызывает use cases", "")
+Rel(app, domain, "оперирует моделью", "")
+Rel(app, infra, "через порты (интерфейсы)", "")
+Rel(infra, domain, "маппинг сущностей", "")

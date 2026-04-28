@@ -57,6 +57,11 @@ management:
 # telegram-chat-id настраивается пользователем в Настройках
 
 mooddiary:
+  dev-auth:
+    enabled: ${MOODDIARY_DEV_AUTH_ENABLED:false}
+    username: ${MOODDIARY_DEV_AUTH_USERNAME:user}
+    password: ${MOODDIARY_DEV_AUTH_PASSWORD:user}
+    subject: ${MOODDIARY_DEV_AUTH_SUBJECT:user}
   upload:
     photo:
       max-file-size-bytes: ${MAX_PHOTO_FILE_SIZE_BYTES:10485760}

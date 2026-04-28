@@ -71,7 +71,7 @@ docker run -d --name mooddiary-db -e POSTGRES_DB=mooddiary -e POSTGRES_USER=mood
 
 Если контейнер с таким именем уже есть: `docker start mooddiary-db` или удалите старый: `docker rm -f mooddiary-db`, затем создайте снова.
 
-### Полный запуск в Docker (PostgreSQL + Backend + Keycloak)
+### Локальный запуск в Docker (PostgreSQL + Backend)
 ```bash
 docker compose up -d --build
 ```
@@ -79,9 +79,15 @@ docker compose up -d --build
 Сервисы:
 - **PostgreSQL** — порт 5432
 - **Backend** — http://localhost:8080
-- **Keycloak** — http://localhost:8180 (admin/admin), realm `mooddiary`, тестовый пользователь `test/test`
 
-Frontend запускается отдельно (см. ниже). По умолчанию используется Keycloak из контейнера — `.env` не требуется.
+Frontend запускается отдельно (см. ниже). Для отладки локальный `docker-compose.yml` включает dev-auth без Keycloak: пользователь **`user` / `user`**.
+
+Если нужен Keycloak локально:
+```bash
+docker compose --profile keycloak up -d --build
+```
+
+Keycloak: http://localhost:8180 (admin/admin), realm `mooddiary`, тестовый пользователь `test/test`.
 
 Пример запуска (без Docker):
 - `gradle bootRun`

@@ -2,11 +2,16 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import type Keycloak from 'keycloak-js'
 import { getKeycloakInstance, initKeycloakOnce } from './keycloakBootstrap'
 import { persistKeycloakTokens } from './keycloakTokens'
+import { isDevAuthEnabled, isDevAuthenticated, loginWithDevCredentials, logoutDevAuth } from './devAuth'
+
+type AuthClient = Pick<Keycloak, 'login' | 'logout'>
 
 export type KeycloakContextValue = {
   ready: boolean
   authenticated: boolean
-  keycloak: Keycloak
+  keycloak: AuthClient
+  devAuthEnabled: boolean
+  loginWithDevCredentials: (username: string, password: string) => boolean
 }
 
 const KeycloakContext = createContext<KeycloakContextValue | null>(null)
@@ -17,17 +22,24 @@ const TOKEN_MIN_VALIDITY_SEC = 70
 export function KeycloakProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
+  const devAuthEnabled = isDevAuthEnabled()
 
   useEffect(() => {
+    if (devAuthEnabled) {
+      setAuthenticated(isDevAuthenticated())
+      setReady(true)
+      return
+    }
+
     void initKeycloakOnce().then((auth) => {
       const k = getKeycloakInstance()
       setAuthenticated(!!auth && !!k.authenticated)
       setReady(true)
     })
-  }, [])
+  }, [devAuthEnabled])
 
   useEffect(() => {
-    if (!ready) return
+    if (!ready || devAuthEnabled) return
     const k = getKeycloakInstance()
 
     k.onTokenExpired = () => {
@@ -47,15 +59,38 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
       window.clearInterval(id)
       k.onTokenExpired = undefined
     }
-  }, [ready])
+  }, [ready, devAuthEnabled])
+
+  const keycloakClient = useMemo<AuthClient>(() => {
+    if (!devAuthEnabled) return getKeycloakInstance()
+
+    return {
+      login: async () => undefined,
+      logout: async (options?: { redirectUri?: string }) => {
+        logoutDevAuth()
+        setAuthenticated(false)
+        if (options?.redirectUri) {
+          window.location.href = options.redirectUri
+        }
+      }
+    }
+  }, [devAuthEnabled])
+
+  const loginDev = (username: string, password: string) => {
+    const ok = loginWithDevCredentials(username, password)
+    if (ok) setAuthenticated(true)
+    return ok
+  }
 
   const value = useMemo<KeycloakContextValue>(
     () => ({
       ready,
       authenticated,
-      keycloak: getKeycloakInstance()
+      keycloak: keycloakClient,
+      devAuthEnabled,
+      loginWithDevCredentials: loginDev
     }),
-    [ready, authenticated]
+    [ready, authenticated, keycloakClient, devAuthEnabled]
   )
 
   return <KeycloakContext.Provider value={value}>{children}</KeycloakContext.Provider>
