@@ -73,15 +73,23 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="journal-page">
+      <div className="journal-card mb-6 overflow-hidden p-6 md:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <h1 className="font-heading text-2xl font-semibold text-journal-ink dark:text-journalDark-ink">Обзор</h1>
-          <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Сегодня: {todayIso}</div>
+            <div className="journal-eyebrow">Обзор дня</div>
+            <h1 className="journal-title mt-3">Обзор</h1>
+            <p className="journal-subtitle">
+              Как звучит сегодняшний день? Отметьте состояние, вернитесь к последним страницам и найдите мягкие закономерности без лишнего шума.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="journal-chip">Сегодня: {todayIso}</span>
+              <span className="journal-chip">Заполнено дней: {analytics?.completedDaysCount ?? 0}</span>
+            </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="journal-btn-primary text-sm" onClick={() => navigate('/diary/entry/new')}>
+            <button type="button" className="journal-btn-primary text-sm" onClick={() => navigate('/diary/entry/new')}>
             Новая запись
           </button>
           <button
@@ -94,6 +102,7 @@ export default function DashboardPage() {
             {telegramSending ? 'Отправка…' : '📤 В Telegram'}
           </button>
         </div>
+      </div>
       </div>
 
       {error ? <div className="journal-card border-amber-300 bg-amber-50/80 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">{error}</div> : null}
@@ -109,12 +118,14 @@ export default function DashboardPage() {
             <MetricCard title="Сред. продуктивность" value={analytics?.avgProductivityScore ?? null} />
           </div>
 
-          <div className="journal-card p-4 text-sm">
-            Заполнено дней: {analytics?.completedDaysCount ?? 0}
-          </div>
-
-          <div className="journal-card p-4">
-            <div className="font-heading text-sm font-medium text-journal-ink dark:text-journalDark-ink">Корреляции</div>
+          <div className="journal-card p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="journal-eyebrow">Связи</div>
+                <div className="mt-1 font-heading text-xl font-semibold text-journal-ink dark:text-journalDark-ink">Корреляции</div>
+              </div>
+              <span className="journal-chip">наблюдения</span>
+            </div>
             <div className="journal-divider mt-2 space-y-2 pt-2">
               {correlations ? (
                 (Object.keys(correlations) as (keyof MoodAnalyticsResponse['correlations'])[]).map((k) => (
@@ -129,28 +140,36 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="journal-card p-4">
+          <div className="journal-card p-5">
             <div className="flex items-center justify-between gap-3">
-              <div className="font-heading text-sm font-medium text-journal-ink dark:text-journalDark-ink">Последние записи</div>
-              <div className="text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Показано: {latestEntries.length}</div>
+              <div>
+                <div className="journal-eyebrow">Архив</div>
+                <div className="mt-1 font-heading text-xl font-semibold text-journal-ink dark:text-journalDark-ink">Последние записи</div>
+              </div>
+              <div className="journal-chip">Показано: {latestEntries.length}</div>
             </div>
 
             {latestEntries.length === 0 ? (
               <div className="journal-divider mt-3 pt-3 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Записей нет.</div>
             ) : (
-              <div className="journal-divider mt-3 space-y-2 pt-3">
+              <div className="journal-divider mt-4 grid gap-3 pt-4 md:grid-cols-2">
                 {latestEntries.map((e) => (
                   <button
                     key={e.id}
                     type="button"
-                    className="w-full rounded-sm border border-journal-line p-3 text-left transition-colors hover:bg-journal-fold dark:border-journalDark-line dark:hover:bg-journalDark-fold"
+                    className="w-full rounded-2xl border border-journal-line/80 bg-journal-paper/60 p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-journal-fold/70 hover:shadow-paperFold dark:border-journalDark-line/80 dark:bg-journalDark-paper/60 dark:hover:bg-journalDark-fold"
                     onClick={() => navigate(`/diary/entry/${e.id}`)}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-medium">{e.entryDate}</div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="font-heading text-lg font-semibold">{e.entryDate}</div>
                       <div className="text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">
-                        настроение {e.moodScore} / энергия {e.energyScore} / продуктивность {e.productivityScore}
+                        {e.isCompleted ? 'завершено' : 'черновик'}
                       </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">
+                      <span className="journal-chip">настроение {e.moodScore}</span>
+                      <span className="journal-chip">энергия {e.energyScore}</span>
+                      <span className="journal-chip">фокус {e.productivityScore}</span>
                     </div>
                     {e.note ? <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">{e.note.slice(0, 120)}{e.note.length > 120 ? '...' : null}</div> : null}
                   </button>
@@ -166,9 +185,15 @@ export default function DashboardPage() {
 
 function MetricCard({ title, value }: { title: string; value: number | null }) {
   return (
-    <div className="journal-card p-4">
+    <div className="journal-card overflow-hidden p-5">
       <div className="text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">{title}</div>
-      <div className="mt-2 font-heading text-2xl font-semibold text-journal-ink dark:text-journalDark-ink">{formatScore(value)}</div>
+      <div className="mt-2 font-heading text-4xl font-semibold text-journal-ink dark:text-journalDark-ink">{formatScore(value)}</div>
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-journal-line/70 dark:bg-journalDark-line">
+        <div
+          className="h-full rounded-full bg-journal-accent dark:bg-journalDark-accent"
+          style={{ width: `${Math.max(0, Math.min(100, ((value ?? 0) / 10) * 100))}%` }}
+        />
+      </div>
     </div>
   )
 }

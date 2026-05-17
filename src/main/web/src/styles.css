@@ -3,41 +3,90 @@
 @tailwind utilities;
 
 /* Journal theme base */
+html {
+  background: #f5f0e8;
+}
+
+html.dark {
+  background: #2c2a26;
+}
+
 body {
   font-family: 'Crimson Pro', Georgia, serif;
+  background:
+    radial-gradient(circle at top left, rgba(166, 124, 82, 0.16), transparent 32rem),
+    linear-gradient(90deg, rgba(61, 44, 41, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(61, 44, 41, 0.025) 1px, transparent 1px),
+    #f5f0e8;
+  background-size: auto, 28px 28px, 28px 28px, auto;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(139, 159, 106, 0.16), transparent 34rem),
+    linear-gradient(90deg, rgba(232, 228, 220, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(232, 228, 220, 0.025) 1px, transparent 1px),
+    #2c2a26;
 }
 
 /* Paper card with folded corner effect */
 @layer components {
   .journal-card {
-    @apply rounded-sm border border-journal-line bg-journal-paper shadow-paper;
+    @apply rounded-2xl border border-journal-line/80 bg-journal-paper/90 shadow-paper backdrop-blur-sm;
+    position: relative;
+  }
+  .journal-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.58), transparent 26%);
   }
   .dark .journal-card {
-    @apply border-journalDark-line bg-journalDark-paper shadow-paperDark;
+    @apply border-journalDark-line/80 bg-journalDark-paper/90 shadow-paperDark;
+  }
+  .dark .journal-card::before {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 28%);
   }
   .journal-btn-primary {
-    @apply rounded-sm border border-journal-accent bg-journal-accent px-4 py-2 font-medium text-white transition-colors hover:bg-journal-accentHover;
+    @apply rounded-full border border-journal-accent bg-journal-accent px-5 py-2.5 font-heading font-semibold text-white shadow-paperFold transition-all hover:-translate-y-0.5 hover:bg-journal-accentHover;
   }
   .dark .journal-btn-primary {
     @apply border-journalDark-accent bg-journalDark-accent hover:bg-journalDark-accentHover;
   }
   .journal-btn-secondary {
-    @apply rounded-sm border border-journal-line bg-transparent px-4 py-2 font-medium text-journal-ink transition-colors hover:bg-journal-fold/50;
+    @apply rounded-full border border-journal-line bg-journal-paper/60 px-4 py-2 font-heading font-medium text-journal-ink transition-all hover:-translate-y-0.5 hover:bg-journal-fold/70;
   }
   .dark .journal-btn-secondary {
-    @apply border-journalDark-line text-journalDark-ink hover:bg-journalDark-fold/50;
+    @apply border-journalDark-line bg-journalDark-paper/60 text-journalDark-ink hover:bg-journalDark-fold/70;
   }
   .journal-input {
-    @apply rounded-sm border border-journal-line bg-journal-paper px-3 py-2 text-journal-ink;
+    @apply rounded-xl border border-journal-line bg-journal-paper/90 px-3 py-2 text-journal-ink shadow-inner outline-none transition-colors placeholder:text-journal-inkMuted/70 focus:border-journal-accent;
   }
   .dark .journal-input {
-    @apply border-journalDark-line bg-journalDark-paper text-journalDark-ink;
+    @apply border-journalDark-line bg-journalDark-paper/90 text-journalDark-ink placeholder:text-journalDark-inkMuted/70 focus:border-journalDark-accent;
   }
   .journal-divider {
     @apply border-t border-journal-line;
   }
   .dark .journal-divider {
     @apply border-journalDark-line;
+  }
+  .journal-page {
+    @apply mx-auto w-full max-w-6xl;
+  }
+  .journal-eyebrow {
+    @apply font-heading text-xs uppercase tracking-[0.22em] text-journal-accent dark:text-journalDark-accent;
+  }
+  .journal-title {
+    @apply font-heading text-3xl font-semibold leading-tight text-journal-ink dark:text-journalDark-ink md:text-4xl;
+  }
+  .journal-subtitle {
+    @apply mt-2 max-w-2xl text-base text-journal-inkMuted dark:text-journalDark-inkMuted;
+  }
+  .journal-chip {
+    @apply rounded-full border border-journal-line bg-journal-paper/70 px-3 py-1 text-sm text-journal-inkMuted dark:border-journalDark-line dark:bg-journalDark-paper/70 dark:text-journalDark-inkMuted;
   }
 }
 

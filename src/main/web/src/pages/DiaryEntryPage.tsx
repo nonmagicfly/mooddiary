@@ -135,25 +135,28 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-6">
-        <h1 className="font-heading text-2xl font-semibold text-journal-ink dark:text-journalDark-ink">{mode === 'create' ? 'Новая запись' : 'Редактирование записи'}</h1>
-        <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Оценки от 1 до 10</div>
+    <div className="journal-page max-w-4xl">
+      <div className="journal-card mb-6 p-6 md:p-8">
+        <div className="journal-eyebrow">{mode === 'create' ? 'Новая страница' : 'Возвращение к странице'}</div>
+        <h1 className="journal-title mt-3">{mode === 'create' ? 'Новая запись' : 'Редактирование записи'}</h1>
+        <p className="journal-subtitle">
+          Оцените день по шкале от 1 до 10 и оставьте пару строк, чтобы позже увидеть не только цифры, но и контекст.
+        </p>
       </div>
 
       {loading ? (
         <div className="journal-card p-4 text-journal-inkMuted dark:text-journalDark-inkMuted">Загрузка…</div>
       ) : (
         <form
-          className="journal-card space-y-4 p-6"
+          className="journal-card space-y-6 p-5 md:p-7"
           onSubmit={(e) => {
             e.preventDefault()
             void submit()
           }}
         >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label className="space-y-1">
-              <span className="text-sm">Дата</span>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto]">
+            <label className="space-y-2">
+              <span className="journal-eyebrow">Дата</span>
               <input
                 className="journal-input w-full"
                 type="date"
@@ -163,9 +166,9 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
               />
             </label>
 
-            <label className="flex items-center gap-2 pt-6 md:justify-self-end">
+            <label className="flex items-center gap-3 rounded-2xl border border-journal-line/80 bg-journal-paper/60 px-4 py-3 md:self-end md:justify-self-end dark:border-journalDark-line dark:bg-journalDark-paper/60">
               <input type="checkbox" checked={form.isCompleted} onChange={(e) => setForm((s) => ({ ...s, isCompleted: e.target.checked }))} />
-              <span className="text-sm">День завершён</span>
+              <span className="font-heading text-sm">День завершён</span>
             </label>
           </div>
 
@@ -177,19 +180,22 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
             <ScaleField label="Качество сна" value={form.sleepQualityScore} onChange={(v) => setForm((s) => ({ ...s, sleepQualityScore: v }))} />
           </div>
 
-          <label className="block space-y-1">
-            <span className="text-sm">Заметка</span>
+          <label className="block space-y-2">
+            <span className="journal-eyebrow">Заметка</span>
             <textarea
-              className="journal-input min-h-28 w-full p-3"
+              className="journal-input min-h-40 w-full p-4 text-lg leading-relaxed"
               value={form.note}
               onChange={(e) => setForm((s) => ({ ...s, note: e.target.value }))}
               maxLength={10000}
-              placeholder="Что произошло сегодня?"
+              placeholder="Что произошло сегодня? Какие детали хочется сохранить?"
             />
           </label>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Выберите теги и симптомы ниже</div>
+            <div>
+              <div className="journal-eyebrow">Метки состояния</div>
+              <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Выберите теги и симптомы ниже</div>
+            </div>
             <div className="flex items-center gap-2">
               <button type="button" className="journal-btn-secondary text-sm" onClick={() => navigate('/diary/tags')}>
                 Управление тегами
@@ -201,14 +207,22 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
           </div>
 
           {availableTags.length > 0 ? (
-            <div className="journal-card space-y-2 p-3">
-              <div className="font-heading text-sm font-medium">Теги (быстрый выбор)</div>
-              <div className="flex flex-wrap gap-3">
+            <div className="journal-card space-y-3 p-4">
+              <div className="font-heading text-lg font-semibold">Теги</div>
+              <div className="flex flex-wrap gap-2">
                 {availableTags.map((t) => {
                   const checked = uiSelectedTagIds.includes(t.id)
                   return (
-                    <label key={t.id} className="flex items-center gap-2 text-sm">
+                    <label
+                      key={t.id}
+                      className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-all ${
+                        checked
+                          ? 'border-journal-accent bg-journal-accent text-white dark:border-journalDark-accent dark:bg-journalDark-accent dark:text-journalDark-bg'
+                          : 'border-journal-line bg-journal-paper/60 text-journal-inkMuted hover:bg-journal-fold dark:border-journalDark-line dark:bg-journalDark-paper/60 dark:text-journalDark-inkMuted dark:hover:bg-journalDark-fold'
+                      }`}
+                    >
                       <input
+                        className="sr-only"
                         type="checkbox"
                         checked={checked}
                         onChange={(e) => {
@@ -227,14 +241,22 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
           ) : null}
 
           {availableSymptoms.length > 0 ? (
-            <div className="journal-card space-y-2 p-3">
-              <div className="font-heading text-sm font-medium">Симптомы (быстрый выбор)</div>
-              <div className="flex flex-wrap gap-3">
+            <div className="journal-card space-y-3 p-4">
+              <div className="font-heading text-lg font-semibold">Симптомы</div>
+              <div className="flex flex-wrap gap-2">
                 {availableSymptoms.map((s) => {
                   const checked = uiSelectedSymptomIds.includes(s.id)
                   return (
-                    <label key={s.id} className="flex items-center gap-2 text-sm">
+                    <label
+                      key={s.id}
+                      className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-all ${
+                        checked
+                          ? 'border-journal-accent bg-journal-accent text-white dark:border-journalDark-accent dark:bg-journalDark-accent dark:text-journalDark-bg'
+                          : 'border-journal-line bg-journal-paper/60 text-journal-inkMuted hover:bg-journal-fold dark:border-journalDark-line dark:bg-journalDark-paper/60 dark:text-journalDark-inkMuted dark:hover:bg-journalDark-fold'
+                      }`}
+                    >
                       <input
+                        className="sr-only"
                         type="checkbox"
                         checked={checked}
                         onChange={(e) => {
@@ -252,8 +274,8 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
             </div>
           ) : null}
 
-          <label className="block space-y-1">
-            <span className="text-sm">Фото</span>
+          <label className="block space-y-2">
+            <span className="journal-eyebrow">Фото</span>
             <input
               className="journal-input w-full"
               type="file"
@@ -319,9 +341,16 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
 const SCORE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const
 
 function ScaleField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  const percent = Math.max(0, Math.min(100, (value / 10) * 100))
+
   return (
-    <label className="space-y-1">
-      <span className="text-sm text-journal-ink dark:text-journalDark-ink">{label}</span>
+    <label className="journal-card block space-y-3 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-heading text-sm font-semibold text-journal-ink dark:text-journalDark-ink">{label}</span>
+        <span className="rounded-full bg-journal-fold px-3 py-1 font-heading text-sm text-journal-accent dark:bg-journalDark-fold dark:text-journalDark-accent">
+          {value}/10
+        </span>
+      </div>
       <select
         className="journal-input min-h-[44px] w-full"
         value={value}
@@ -334,6 +363,9 @@ function ScaleField({ label, value, onChange }: { label: string; value: number; 
           </option>
         ))}
       </select>
+      <div className="h-1.5 overflow-hidden rounded-full bg-journal-line/70 dark:bg-journalDark-line">
+        <div className="h-full rounded-full bg-journal-accent dark:bg-journalDark-accent" style={{ width: `${percent}%` }} />
+      </div>
     </label>
   )
 }

@@ -129,7 +129,9 @@ Realm `mooddiary` уже содержит настроенный клиент с
 
 ## Деплой на VPS
 
-См. [deploy/DEPLOY.md](deploy/DEPLOY.md) — инструкции по развёртыванию на VPS с Docker Compose.
+**Упрощённый MVP** (один пользователь, без Keycloak, прямой IP/домен, без Cloudflare): [deploy/MVP.md](deploy/MVP.md), скрипт `deploy/deploy.mvp.sh`, `deploy/docker-compose.mvp.yml`.
+
+Полный прод с Keycloak:
 
 ## Liquibase
 Liquibase использует master changelog:

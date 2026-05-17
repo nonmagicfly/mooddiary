@@ -1,6 +1,7 @@
 package com.mooddiary.diary.adapter.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -15,6 +16,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
  * Issuer в JWT от Keycloak (KC_HOSTNAME=localhost) — http://localhost:8180/realms/mooddiary.
  */
 @Configuration
+@ConditionalOnProperty(name = "mooddiary.dev-auth.enabled", havingValue = "false", matchIfMissing = true)
 public class JwtDecoderConfiguration {
 
     @Value("${KEYCLOAK_JWKS_URI:http://host.docker.internal:8180/realms/mooddiary/protocol/openid-connect/certs}")

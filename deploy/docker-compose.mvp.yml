@@ -1,0 +1,80 @@
+# MoodDiary MVP: PostgreSQL + backend (один пользователь, без Keycloak) + nginx.
+# Деплой напрямую на VPS (A-запись на IP, порт 80). Без Cloudflare.
+# Перед запуском: сгенерировать nginx.mvp.runtime.conf — см. deploy.mvp.sh
+name: mooddiary-mvp
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: mooddiary-mvp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mooddiary
+      POSTGRES_USER: mooddiary
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    volumes:
+      - mooddiary_mvp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mooddiary -d mooddiary"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mooddiary-mvp
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: mooddiary-mvp-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: mooddiary
+      DB_USER: mooddiary
+      DB_PASSWORD: ${DB_PASSWORD}
+      SERVER_PORT: 8080
+      MOODDIARY_DEV_AUTH_ENABLED: "true"
+      MOODDIARY_DEV_AUTH_USERNAME: ${MVP_AUTH_USERNAME:-mvp}
+      MOODDIARY_DEV_AUTH_PASSWORD: ${MVP_AUTH_PASSWORD:-mvp}
+      MOODDIARY_DEV_AUTH_SUBJECT: ${MVP_AUTH_SUBJECT:-mvp}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      PHOTO_STORAGE_DIR: /app/data/photos
+    volumes:
+      - mooddiary_mvp_photos:/app/data/photos
+    networks:
+      - mooddiary-mvp
+
+  nginx:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.nginx
+      args:
+        VITE_API_BASE_URL: ""
+        VITE_KEYCLOAK_ISSUER_URI: https://mvp.local/realms/mooddiary
+        VITE_DEV_AUTH_ENABLED: "true"
+        VITE_DEV_AUTH_USERNAME: ${MVP_AUTH_USERNAME:-mvp}
+        VITE_DEV_AUTH_PASSWORD: ${MVP_AUTH_PASSWORD:-mvp}
+        VITE_DEV_AUTH_SUBJECT: ${MVP_AUTH_SUBJECT:-mvp}
+    container_name: mooddiary-mvp-nginx
+    restart: unless-stopped
+    ports:
+      - "${MVP_HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx.mvp.runtime.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - mooddiary-mvp
+
+volumes:
+  mooddiary_mvp_pgdata:
+  mooddiary_mvp_photos:
+
+networks:
+  mooddiary-mvp:
+    driver: bridge

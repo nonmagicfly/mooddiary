@@ -157,7 +157,7 @@ flowchart LR
 ## 8. Реализация и миграция (Phase E — Opportunities & Solutions / Phase F — Migration Planning)
 
 - **Локально:** `docker compose` (см. `README.md`), frontend `npm run dev` с proxy на API.  
-- **Production VPS:** каталог `deploy/`: `docker-compose.prod.yml`, `deploy.sh`, `nginx.conf`, шаблон realm Keycloak, документация `DEPLOY-IP.md`, `TROUBLESHOOT.md`.  
+- **Production VPS:** каталог `deploy/`: `docker-compose.prod.yml`, `deploy.sh`, `nginx.conf.template`, шаблон realm Keycloak, документация `DEPLOY-IP.md`, `TROUBLESHOOT.md`.  
 - **Известный риск эксплуатации:** устаревший `docker-compose` v1 (Python) может давать `KeyError: 'ContainerConfig'` на новых Docker API — рекомендуется **Docker Compose v2** (`docker compose`).
 
 ---
