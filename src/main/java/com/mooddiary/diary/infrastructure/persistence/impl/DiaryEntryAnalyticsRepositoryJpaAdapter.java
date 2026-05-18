@@ -38,7 +38,6 @@ public class DiaryEntryAnalyticsRepositoryJpaAdapter implements DiaryEntryAnalyt
                         )
                         from DiaryEntryJpaEntity de
                         where de.userId = :userId
-                          and de.isCompleted = true
                           and de.entryDate >= :from
                           and de.entryDate <= :to
                         """,
@@ -66,7 +65,6 @@ public class DiaryEntryAnalyticsRepositoryJpaAdapter implements DiaryEntryAnalyt
                         from DiaryEntryJpaEntity de
                         join de.tags t
                         where de.userId = :userId
-                          and de.isCompleted = true
                           and de.entryDate >= :from
                           and de.entryDate <= :to
                         group by t.id, t.name, t.color
@@ -97,7 +95,6 @@ public class DiaryEntryAnalyticsRepositoryJpaAdapter implements DiaryEntryAnalyt
                         )
                         from DiaryEntryJpaEntity de
                         where de.userId = :userId
-                          and de.isCompleted = true
                           and de.entryDate >= :from
                           and de.entryDate <= :to
                         order by de.entryDate asc

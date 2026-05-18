@@ -3,11 +3,11 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { routerFutureFlags } from '../test/routerFuture'
 import DiaryHistoryPage from './DiaryHistoryPage'
 
 vi.mock('../api/api', () => {
   return {
-    getTags: vi.fn(),
     getSymptoms: vi.fn(),
     listDiaryEntries: vi.fn(),
     getAnalyticsWeekly: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../api/api', () => {
   }
 })
 
-import { getAnalyticsMonthly, getAnalyticsWeekly, getSymptoms, getTags, listDiaryEntries } from '../api/api'
+import { getAnalyticsMonthly, getAnalyticsWeekly, getSymptoms, listDiaryEntries } from '../api/api'
 
 describe('DiaryHistoryPage', () => {
   beforeEach(() => {
@@ -23,14 +23,12 @@ describe('DiaryHistoryPage', () => {
     vi.restoreAllMocks()
   })
 
-  it('should render entries and filter by selected tag ids', async () => {
+  it('should render entries and filter by selected symptom ids', async () => {
     const user = userEvent.setup()
 
-    const tag1 = { userId: 'u', id: '11111111-1111-4111-8111-111111111111', name: 'work', color: 'red', createdAt: '', updatedAt: null }
-    const tag2 = { userId: 'u', id: '22222222-2222-4222-8222-222222222222', name: 'sport', color: null, createdAt: '', updatedAt: null }
+    const symptom1 = { userId: 'u', id: '22222222-2222-4222-8222-222222222222', name: 'pain', createdAt: '', updatedAt: null }
 
-    ;(getTags as unknown as vi.Mock).mockResolvedValue([tag1, tag2])
-    ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([])
+    ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([symptom1])
 
     const entries = [
       {
@@ -44,8 +42,8 @@ describe('DiaryHistoryPage', () => {
         sleepQualityScore: 5,
         note: null,
         isCompleted: false,
-        tagIds: [tag1.id],
-        symptomIds: [],
+        tagIds: [],
+        symptomIds: [symptom1.id],
         createdAt: '',
         updatedAt: null
       },
@@ -60,7 +58,7 @@ describe('DiaryHistoryPage', () => {
         sleepQualityScore: 5,
         note: null,
         isCompleted: false,
-        tagIds: [tag2.id],
+        tagIds: [],
         symptomIds: [],
         createdAt: '',
         updatedAt: null
@@ -70,7 +68,7 @@ describe('DiaryHistoryPage', () => {
     ;(listDiaryEntries as unknown as vi.Mock).mockResolvedValue(entries)
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DiaryHistoryPage />
       </MemoryRouter>
     )
@@ -79,9 +77,8 @@ describe('DiaryHistoryPage', () => {
       expect(screen.getAllByText('Записи').length).toBeGreaterThan(0)
     })
 
-    // pick tag "work"
-    const workCheckbox = screen.getByLabelText('work') as HTMLInputElement
-    await user.click(workCheckbox)
+    const painCheckbox = screen.getByLabelText('pain') as HTMLInputElement
+    await user.click(painCheckbox)
 
     expect(await screen.findByText('Найдено: 1')).toBeInTheDocument()
   })
@@ -89,13 +86,12 @@ describe('DiaryHistoryPage', () => {
   it('should render calendar when switching to Calendar view', async () => {
     const user = userEvent.setup()
 
-    ;(getTags as unknown as vi.Mock).mockResolvedValue([])
     ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([])
 
     ;(listDiaryEntries as unknown as vi.Mock).mockResolvedValueOnce([]).mockResolvedValueOnce([])
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DiaryHistoryPage />
       </MemoryRouter>
     )
@@ -115,7 +111,6 @@ describe('DiaryHistoryPage', () => {
   it('should render weekly overview when switching to Weekly view', async () => {
     const user = userEvent.setup()
 
-    ;(getTags as unknown as vi.Mock).mockResolvedValue([])
     ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([])
 
     ;(listDiaryEntries as unknown as vi.Mock).mockResolvedValueOnce([])
@@ -142,7 +137,7 @@ describe('DiaryHistoryPage', () => {
     })
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DiaryHistoryPage />
       </MemoryRouter>
     )
@@ -158,7 +153,6 @@ describe('DiaryHistoryPage', () => {
   it('should render monthly overview and top tags when switching to Monthly view', async () => {
     const user = userEvent.setup()
 
-    ;(getTags as unknown as vi.Mock).mockResolvedValue([])
     ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([])
 
     ;(listDiaryEntries as unknown as vi.Mock).mockResolvedValueOnce([])
@@ -176,7 +170,7 @@ describe('DiaryHistoryPage', () => {
     })
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DiaryHistoryPage />
       </MemoryRouter>
     )

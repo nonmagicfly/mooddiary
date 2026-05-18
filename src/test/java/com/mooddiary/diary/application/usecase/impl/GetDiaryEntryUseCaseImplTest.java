@@ -38,7 +38,7 @@ class GetDiaryEntryUseCaseImplTest {
         String keycloakSubject = "sub-1";
         UUID userId = UUID.randomUUID();
         UUID diaryEntryId = UUID.randomUUID();
-        LocalDate entryDate = LocalDate.now();
+        LocalDate entryDate = LocalDate.now().minusDays(10);
 
         Instant createdAt = Instant.now().minusSeconds(3600);
         Instant updatedAt = Instant.now().minusSeconds(60);

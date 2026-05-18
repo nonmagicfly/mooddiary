@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!ready || !authenticated) return
-    navigate('/diary/dashboard', { replace: true })
+    navigate('/diary/entry/new', { replace: true })
   }, [ready, authenticated, navigate])
 
   const loginRedirectUri = `${window.location.origin}/diary/login`
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const submitDevLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (loginWithDevCredentials(username.trim(), password)) {
-      navigate('/diary/dashboard', { replace: true })
+      navigate('/diary/entry/new', { replace: true })
       return
     }
     setError('Неверный логин или пароль')

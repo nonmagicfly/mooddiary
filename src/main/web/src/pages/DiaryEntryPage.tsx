@@ -26,14 +26,15 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
       energyScore: 5,
       productivityScore: 5,
       stressScore: 5,
-      sleepQualityScore: 5,
-      note: '',
-      isCompleted: false
+      note: ''
     }),
     []
   )
 
   const [form, setForm] = useState(initialForm)
+  /** Kept for API; hidden from UI (legacy column). */
+  const [sleepQualityScore, setSleepQualityScore] = useState(5)
+  const [entryReadOnly, setEntryReadOnly] = useState(false)
   const [loading, setLoading] = useState(mode === 'edit')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -46,6 +47,10 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
   const [availableSymptoms, setAvailableSymptoms] = useState<Symptom[]>([])
   const [uiSelectedTagIds, setUiSelectedTagIds] = useState<UUID[]>([])
   const [uiSelectedSymptomIds, setUiSelectedSymptomIds] = useState<UUID[]>([])
+
+  useEffect(() => {
+    if (mode === 'create') setEntryReadOnly(false)
+  }, [mode])
 
   useEffect(() => {
     void (async () => {
@@ -78,10 +83,10 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
           energyScore: entry.energyScore,
           productivityScore: entry.productivityScore,
           stressScore: entry.stressScore,
-          sleepQualityScore: entry.sleepQualityScore,
-          note: entry.note ?? '',
-          isCompleted: entry.isCompleted,
+          note: entry.note ?? ''
         })
+        setSleepQualityScore(entry.sleepQualityScore)
+        setEntryReadOnly(entry.isCompleted)
         setUiSelectedTagIds(entry.tagIds)
         setUiSelectedSymptomIds(entry.symptomIds)
       })
@@ -98,15 +103,16 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
       energyScore: form.energyScore,
       productivityScore: form.productivityScore,
       stressScore: form.stressScore,
-      sleepQualityScore: form.sleepQualityScore,
+      sleepQualityScore,
       note: form.note.trim() ? form.note : null,
-      isCompleted: form.isCompleted,
+      isCompleted: false,
       tagIds: Array.from(new Set(uiSelectedTagIds)),
       symptomIds: Array.from(new Set(uiSelectedSymptomIds))
     }
-  }, [form, uiSelectedTagIds, uiSelectedSymptomIds])
+  }, [form, sleepQualityScore, uiSelectedTagIds, uiSelectedSymptomIds])
 
   const submit = async () => {
+    if (entryReadOnly) return
     setError(null)
     setWarning(null)
     const finalPayload: DiaryEntryUpsertPayload = payload
@@ -154,7 +160,13 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
             void submit()
           }}
         >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto]">
+          {entryReadOnly ? (
+            <div className="rounded-2xl border border-amber-300/80 bg-amber-50/90 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+              Запись зафиксирована: прошло больше трёх дней с даты записи. Редактирование и новые фото недоступны.
+            </div>
+          ) : null}
+
+          <div className="grid grid-cols-1 gap-4">
             <label className="space-y-2">
               <span className="journal-eyebrow">Дата</span>
               <input
@@ -162,22 +174,41 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
                 type="date"
                 value={form.entryDate}
                 onChange={(e) => setForm((s) => ({ ...s, entryDate: e.target.value }))}
+                disabled={entryReadOnly}
                 required
               />
-            </label>
-
-            <label className="flex items-center gap-3 rounded-2xl border border-journal-line/80 bg-journal-paper/60 px-4 py-3 md:self-end md:justify-self-end dark:border-journalDark-line dark:bg-journalDark-paper/60">
-              <input type="checkbox" checked={form.isCompleted} onChange={(e) => setForm((s) => ({ ...s, isCompleted: e.target.checked }))} />
-              <span className="font-heading text-sm">День завершён</span>
             </label>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <ScaleField label="Настроение" value={form.moodScore} onChange={(v) => setForm((s) => ({ ...s, moodScore: v }))} />
-            <ScaleField label="Энергия" value={form.energyScore} onChange={(v) => setForm((s) => ({ ...s, energyScore: v }))} />
-            <ScaleField label="Продуктивность" value={form.productivityScore} onChange={(v) => setForm((s) => ({ ...s, productivityScore: v }))} />
-            <ScaleField label="Стресс" value={form.stressScore} onChange={(v) => setForm((s) => ({ ...s, stressScore: v }))} />
-            <ScaleField label="Качество сна" value={form.sleepQualityScore} onChange={(v) => setForm((s) => ({ ...s, sleepQualityScore: v }))} />
+            <ScaleField
+              fieldId="mood"
+              label="Настроение"
+              value={form.moodScore}
+              onChange={(v) => setForm((s) => ({ ...s, moodScore: v }))}
+              disabled={entryReadOnly}
+            />
+            <ScaleField
+              fieldId="energy"
+              label="Энергия"
+              value={form.energyScore}
+              onChange={(v) => setForm((s) => ({ ...s, energyScore: v }))}
+              disabled={entryReadOnly}
+            />
+            <ScaleField
+              fieldId="productivity"
+              label="Продуктивность"
+              value={form.productivityScore}
+              onChange={(v) => setForm((s) => ({ ...s, productivityScore: v }))}
+              disabled={entryReadOnly}
+            />
+            <ScaleField
+              fieldId="stress"
+              label="Стресс"
+              value={form.stressScore}
+              onChange={(v) => setForm((s) => ({ ...s, stressScore: v }))}
+              disabled={entryReadOnly}
+            />
           </div>
 
           <label className="block space-y-2">
@@ -187,22 +218,15 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
               value={form.note}
               onChange={(e) => setForm((s) => ({ ...s, note: e.target.value }))}
               maxLength={10000}
+              disabled={entryReadOnly}
               placeholder="Что произошло сегодня? Какие детали хочется сохранить?"
             />
           </label>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="journal-eyebrow">Метки состояния</div>
-              <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Выберите теги и симптомы ниже</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button type="button" className="journal-btn-secondary text-sm" onClick={() => navigate('/diary/tags')}>
-                Управление тегами
-              </button>
-              <button type="button" className="journal-btn-secondary text-sm" onClick={() => navigate('/diary/symptoms')}>
-                Управление симптомами
-              </button>
+          <div>
+            <div className="journal-eyebrow">Метки состояния</div>
+            <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">
+              Выберите теги и симптомы. Управление списками — в разделе «Настройки».
             </div>
           </div>
 
@@ -225,6 +249,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
                         className="sr-only"
                         type="checkbox"
                         checked={checked}
+                        disabled={entryReadOnly}
                         onChange={(e) => {
                           setUiSelectedTagIds((prev) => {
                             if (e.target.checked) return Array.from(new Set([...prev, t.id]))
@@ -259,6 +284,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
                         className="sr-only"
                         type="checkbox"
                         checked={checked}
+                        disabled={entryReadOnly}
                         onChange={(e) => {
                           setUiSelectedSymptomIds((prev) => {
                             if (e.target.checked) return Array.from(new Set([...prev, s.id]))
@@ -281,6 +307,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
               type="file"
               accept="image/*"
               multiple
+              disabled={entryReadOnly}
               onChange={(e) => {
                 const files = e.currentTarget.files
                 if (!files) {
@@ -312,7 +339,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
                   setTelegramSending(false)
                 }
               }}
-              disabled={saving || telegramSending}
+              disabled={saving || telegramSending || entryReadOnly}
             >
               {telegramSending ? 'Отправка…' : '📤 В Telegram'}
             </button>
@@ -320,14 +347,14 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
               type="button"
               className="journal-btn-secondary min-h-[44px]"
               onClick={() => navigate('/diary/entry/new')}
-              disabled={saving}
+              disabled={saving || entryReadOnly}
             >
               Отмена
             </button>
             <button
               type="submit"
               className="journal-btn-primary min-h-[44px] disabled:opacity-50"
-              disabled={saving}
+              disabled={saving || entryReadOnly}
             >
               {saving ? 'Сохранение…' : mode === 'create' ? 'Создать запись' : 'Сохранить'}
             </button>
@@ -340,21 +367,39 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
 
 const SCORE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const
 
-function ScaleField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function ScaleField({
+  fieldId,
+  label,
+  value,
+  onChange,
+  disabled
+}: {
+  fieldId: string
+  label: string
+  value: number
+  onChange: (v: number) => void
+  disabled?: boolean
+}) {
   const percent = Math.max(0, Math.min(100, (value / 10) * 100))
+  const selectId = React.useId()
 
   return (
-    <label className="journal-card block space-y-3 p-4">
+    <div className="journal-card block space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
-        <span className="font-heading text-sm font-semibold text-journal-ink dark:text-journalDark-ink">{label}</span>
+        <label htmlFor={selectId} className="font-heading text-sm font-semibold text-journal-ink dark:text-journalDark-ink">
+          {label}
+        </label>
         <span className="rounded-full bg-journal-fold px-3 py-1 font-heading text-sm text-journal-accent dark:bg-journalDark-fold dark:text-journalDark-accent">
           {value}/10
         </span>
       </div>
       <select
+        id={selectId}
+        data-testid={`diary-scale-${fieldId}`}
         className="journal-input min-h-[44px] w-full"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        disabled={disabled}
         required
       >
         {SCORE_OPTIONS.map((n) => (
@@ -366,7 +411,7 @@ function ScaleField({ label, value, onChange }: { label: string; value: number; 
       <div className="h-1.5 overflow-hidden rounded-full bg-journal-line/70 dark:bg-journalDark-line">
         <div className="h-full rounded-full bg-journal-accent dark:bg-journalDark-accent" style={{ width: `${percent}%` }} />
       </div>
-    </label>
+    </div>
   )
 }
 

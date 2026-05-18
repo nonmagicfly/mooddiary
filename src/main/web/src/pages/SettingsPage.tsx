@@ -27,7 +27,7 @@ export default function SettingsPage() {
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const stored = localStorage.getItem('theme')
-    return stored === 'dark' ? 'dark' : 'light'
+    return stored === 'light' ? 'light' : 'dark'
   })
 
   const [tokenSubject, setTokenSubject] = useState<string | null>(null)
@@ -98,8 +98,11 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-4">
-        <div className="journal-card p-4 md:hidden">
-          <div className="font-heading text-sm font-medium">Быстрые ссылки</div>
+        <div className="journal-card p-4">
+          <div className="font-heading text-sm font-medium">Справочники</div>
+          <div className="mt-2 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">
+            Управление списками тегов и симптомов для записей.
+          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" className="journal-btn-secondary py-2" onClick={() => navigate('/diary/tags')}>
               Теги

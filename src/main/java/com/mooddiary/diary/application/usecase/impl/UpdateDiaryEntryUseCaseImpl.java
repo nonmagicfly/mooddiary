@@ -10,10 +10,12 @@ import com.mooddiary.diary.application.port.out.TagRepositoryPort;
 import com.mooddiary.diary.application.service.UserIdentityService;
 import com.mooddiary.diary.application.usecase.UpdateDiaryEntryUseCase;
 import com.mooddiary.diary.domain.diary.DiaryEntry;
+import com.mooddiary.diary.domain.diary.DiaryEntryLockRules;
 import com.mooddiary.diary.domain.diary.Score1to10;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -49,6 +51,10 @@ public class UpdateDiaryEntryUseCaseImpl implements UpdateDiaryEntryUseCase {
 
         DiaryEntry existing = diaryEntryRepositoryPort.findByIdAndUserId(diaryEntryId, userId)
                 .orElseThrow(() -> new NotFoundAppException("Diary entry not found"));
+
+        if (DiaryEntryLockRules.isEditLocked(existing.getEntryDate(), LocalDate.now())) {
+            throw new ValidationAppException("Срок редактирования истёк (3 дня с даты записи)");
+        }
 
         validateTagIds(userId, command.tagIds());
         validateSymptomIds(userId, command.symptomIds());

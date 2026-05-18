@@ -30,5 +30,5 @@ export function DefaultRedirect() {
       </div>
     )
   }
-  return <Navigate to={authenticated ? '/diary/dashboard' : '/diary/login'} replace />
+  return <Navigate to={authenticated ? '/diary/entry/new' : '/diary/login'} replace />
 }

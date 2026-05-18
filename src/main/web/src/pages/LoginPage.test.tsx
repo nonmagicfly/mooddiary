@@ -2,8 +2,9 @@ import React from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { KeycloakProvider } from '../auth/KeycloakContext'
+import { routerFutureFlags } from '../test/routerFuture'
 import LoginPage from './LoginPage'
 
 describe('LoginPage', () => {
@@ -11,11 +12,15 @@ describe('LoginPage', () => {
     localStorage.clear()
   })
 
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it('should offer Keycloak sign-in when not authenticated', async () => {
     const user = userEvent.setup()
 
     render(
-      <MemoryRouter initialEntries={['/diary/login']}>
+      <MemoryRouter future={routerFutureFlags} initialEntries={['/diary/login']}>
         <KeycloakProvider>
           <Routes>
             <Route path="/diary/login" element={<LoginPage />} />

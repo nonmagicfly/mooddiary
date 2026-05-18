@@ -3,7 +3,19 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { routerFutureFlags } from '../test/routerFuture'
 import DiaryEntryPage from './DiaryEntryPage'
+
+function diaryEntryRoutes(initial: string) {
+  return (
+    <MemoryRouter future={routerFutureFlags} initialEntries={[initial]}>
+      <Routes>
+        <Route path="/diary/entry/new" element={<DiaryEntryPage mode="create" />} />
+        <Route path="/diary/entry/:id" element={<DiaryEntryPage mode="edit" />} />
+      </Routes>
+    </MemoryRouter>
+  )
+}
 
 vi.mock('../api/api', () => {
   return {
@@ -31,7 +43,8 @@ describe('DiaryEntryPage', () => {
 
     ;(getTags as unknown as vi.Mock).mockResolvedValue([tag1])
     ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([symptom1])
-    ;(createDiaryEntry as unknown as vi.Mock).mockResolvedValue({
+
+    const createdStub = {
       userId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
       id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
       entryDate: '2026-03-19',
@@ -46,16 +59,12 @@ describe('DiaryEntryPage', () => {
       symptomIds: [symptom1.id],
       createdAt: new Date().toISOString(),
       updatedAt: null
-    })
+    }
+    ;(createDiaryEntry as unknown as vi.Mock).mockResolvedValue(createdStub)
     ;(uploadDiaryEntryPhotos as unknown as vi.Mock).mockResolvedValue([])
+    ;(getDiaryEntry as unknown as vi.Mock).mockResolvedValue(createdStub)
 
-    render(
-      <MemoryRouter initialEntries={['/diary/entry/new']}>
-        <Routes>
-          <Route path="/diary/entry/new" element={<DiaryEntryPage mode="create" />} />
-        </Routes>
-      </MemoryRouter>
-    )
+    render(diaryEntryRoutes('/diary/entry/new'))
 
     const tagCheckbox = await screen.findByLabelText('work')
     const symptomCheckbox = await screen.findByLabelText('pain')
@@ -96,7 +105,7 @@ describe('DiaryEntryPage', () => {
     ;(getDiaryEntry as unknown as vi.Mock).mockResolvedValue(entry)
 
     render(
-      <MemoryRouter initialEntries={['/diary/entry/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb']}>
+      <MemoryRouter future={routerFutureFlags} initialEntries={['/diary/entry/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb']}>
         <Routes>
           <Route path="/diary/entry/:id" element={<DiaryEntryPage mode="edit" />} />
         </Routes>
@@ -108,12 +117,16 @@ describe('DiaryEntryPage', () => {
     })
 
     await waitFor(() => {
-      expect((screen.getByDisplayValue('2026-03-19') as HTMLInputElement).value).toBe('2026-03-19')
+      const dateInputs = screen.getAllByDisplayValue('2026-03-19')
+      expect(dateInputs.length).toBeGreaterThanOrEqual(1)
+      expect((dateInputs[0] as HTMLInputElement).value).toBe('2026-03-19')
     })
 
-    expect(screen.getByText('Настроение')).toBeInTheDocument()
-    const moodSelect = screen.getByRole('combobox', { name: /настроение/i })
-    expect(moodSelect).toHaveValue('1')
+    await waitFor(() => {
+      const moodSelects = screen.getAllByTestId('diary-scale-mood')
+      expect(moodSelects.some((el) => (el as HTMLSelectElement).value === '1')).toBe(true)
+    })
+
     expect(screen.getByDisplayValue('hello')).toBeInTheDocument()
   })
 
@@ -139,14 +152,9 @@ describe('DiaryEntryPage', () => {
 
     ;(createDiaryEntry as unknown as vi.Mock).mockResolvedValue(created)
     ;(uploadDiaryEntryPhotos as unknown as vi.Mock).mockResolvedValue([])
+    ;(getDiaryEntry as unknown as vi.Mock).mockResolvedValue(created)
 
-    const { container } = render(
-      <MemoryRouter initialEntries={['/diary/entry/new']}>
-        <Routes>
-          <Route path="/diary/entry/new" element={<DiaryEntryPage mode="create" />} />
-        </Routes>
-      </MemoryRouter>
-    )
+    const { container } = render(diaryEntryRoutes('/diary/entry/new'))
 
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement
     const file = new File(['hello'], 'a.png', { type: 'image/png' })

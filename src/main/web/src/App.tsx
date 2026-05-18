@@ -18,8 +18,6 @@ const NAV_ITEMS = [
   { href: '/diary/dashboard', label: 'Обзор', icon: '◌' },
   { href: '/diary/history', label: 'История', icon: '◇' },
   { href: '/diary/analytics', label: 'Аналитика', icon: '⌁' },
-  { href: '/diary/tags', label: 'Теги', icon: '#' },
-  { href: '/diary/symptoms', label: 'Симптомы', icon: '+' },
   { href: '/diary/settings', label: 'Настройки', icon: '•' }
 ]
 
@@ -74,7 +72,7 @@ function AppShell() {
   const navigate = useNavigate()
   const initialTheme = useMemo(() => {
     const stored = localStorage.getItem(THEME_KEY)
-    return stored === 'dark' ? 'dark' : 'light'
+    return stored === 'light' ? 'light' : 'dark'
   }, [])
 
   const [theme, setTheme] = useState(initialTheme)

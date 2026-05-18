@@ -124,26 +124,13 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <MetricCard title="Сон → Настроение (корр.)" value={correlations.sleepToMood} />
-            <MetricCard title="Сон → Энергия (корр.)" value={correlations.sleepToEnergy} />
             <MetricCard title="Стресс → Продуктивность (корр.)" value={correlations.stressToProductivity} />
           </div>
 
           <div className="journal-card p-4">
             <div className="font-heading text-sm font-medium">Корреляции</div>
             <div className="mt-3 space-y-3">
-              <SignedBarRow
-                label="Сон → Настроение"
-                value={correlations.sleepToMood}
-              />
-              <SignedBarRow
-                label="Сон → Энергия"
-                value={correlations.sleepToEnergy}
-              />
-              <SignedBarRow
-                label="Стресс → Продуктивность"
-                value={correlations.stressToProductivity}
-              />
+              <SignedBarRow label="Стресс → Продуктивность" value={correlations.stressToProductivity} />
             </div>
           </div>
 

@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -137,6 +138,44 @@ class UpdateDiaryEntryUseCaseImplTest {
         );
 
         assertThrows(NotFoundAppException.class, () -> useCase.execute(keycloakSubject, diaryEntryId, command));
+    }
+
+    @Test
+    void shouldThrowValidationWhenEditWindowExpired() {
+        String keycloakSubject = "sub-1";
+        UUID userId = UUID.randomUUID();
+        UUID diaryEntryId = UUID.randomUUID();
+        LocalDate oldEntryDate = LocalDate.now().minusDays(5);
+
+        DiaryEntry existing = DiaryEntry.fromPersistence(
+                diaryEntryId,
+                userId,
+                oldEntryDate,
+                Score1to10.of(1),
+                Score1to10.of(1),
+                Score1to10.of(1),
+                Score1to10.of(1),
+                Score1to10.of(1),
+                "x",
+                true,
+                Set.of(),
+                Set.of(),
+                Instant.now().minusSeconds(3600),
+                Instant.now().minusSeconds(60)
+        );
+
+        when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
+        when(diaryEntryRepositoryPort.findByIdAndUserId(diaryEntryId, userId)).thenReturn(Optional.of(existing));
+
+        DiaryEntryUpdateCommand command = new DiaryEntryUpdateCommand(
+                oldEntryDate, 2, 2, 2, 2, 2,
+                "y", false,
+                Set.of(), Set.of()
+        );
+
+        ValidationAppException ex = assertThrows(ValidationAppException.class,
+                () -> useCase.execute(keycloakSubject, diaryEntryId, command));
+        assertTrue(ex.getMessage().contains("Срок редактирования"));
     }
 
     @Test

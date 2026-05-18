@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAnalyticsMonthly, getAnalyticsWeekly, getSymptoms, getTags, listDiaryEntries } from '../api/api'
-import { DiaryEntry, MoodAnalyticsResponse, Symptom, Tag } from '../api/types'
+import { getAnalyticsMonthly, getAnalyticsWeekly, getSymptoms, listDiaryEntries } from '../api/api'
+import { DiaryEntry, MoodAnalyticsResponse, Symptom } from '../api/types'
 
 function isoDate(d: Date): string {
   const year = d.getFullYear()
@@ -31,10 +31,8 @@ export default function DiaryHistoryPage() {
   const [toDate, setToDate] = useState(() => isoDate(new Date()))
   const [limit, setLimit] = useState(200)
 
-  const [tags, setTags] = useState<Tag[]>([])
   const [symptoms, setSymptoms] = useState<Symptom[]>([])
 
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
   const [selectedSymptomIds, setSelectedSymptomIds] = useState<string[]>([])
 
   const [entries, setEntries] = useState<DiaryEntry[]>([])
@@ -44,8 +42,7 @@ export default function DiaryHistoryPage() {
       setLoading(true)
       setError(null)
       try {
-        const [tagsRes, symptomsRes] = await Promise.all([getTags(), getSymptoms()])
-        setTags(tagsRes)
+        const symptomsRes = await getSymptoms()
         setSymptoms(symptomsRes)
         const res = await listDiaryEntries({ from: fromDate, to: toDate, limit })
         setEntries(res)
@@ -59,23 +56,10 @@ export default function DiaryHistoryPage() {
   }, [])
 
   const filteredEntries = useMemo(() => {
-    const tagFilter = selectedTagIds.length > 0 ? toSet(selectedTagIds) : null
     const symptomFilter = selectedSymptomIds.length > 0 ? toSet(selectedSymptomIds) : null
 
     return entries
       .filter((e) => {
-        if (tagFilter) {
-          const entryTags = toSet(e.tagIds)
-          let ok = false
-          for (const id of tagFilter) {
-            if (entryTags.has(id)) {
-              ok = true
-              break
-            }
-          }
-          if (!ok) return false
-        }
-
         if (symptomFilter) {
           const entrySymptoms = toSet(e.symptomIds)
           let ok = false
@@ -91,7 +75,7 @@ export default function DiaryHistoryPage() {
         return true
       })
       .sort((a, b) => (a.entryDate < b.entryDate ? 1 : -1))
-  }, [entries, selectedTagIds, selectedSymptomIds])
+  }, [entries, selectedSymptomIds])
 
   const applyDateRange = async () => {
     setLoading(true)
@@ -206,7 +190,7 @@ export default function DiaryHistoryPage() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-6">
         <h1 className="font-heading text-2xl font-semibold text-journal-ink dark:text-journalDark-ink">История дневника</h1>
-        <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Фильтры по дате, тегам и симптомам</div>
+        <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Фильтры по дате и симптомам</div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => setViewMode('list')} className={`rounded-sm border px-3 py-1 text-sm ${viewMode === 'list' ? 'border-journal-accent bg-journal-accent text-white dark:border-journalDark-accent dark:bg-journalDark-accent' : 'journal-btn-secondary'}`}>
             Список
@@ -258,39 +242,14 @@ export default function DiaryHistoryPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="font-heading text-sm font-medium">Быстрые фильтры</div>
-              <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Фильтрация по тегам и симптомам</div>
+              <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">По симптомам</div>
             </div>
             <button type="button" className="journal-btn-secondary" onClick={() => navigate('/diary/entry/new')}>
               Новая запись
             </button>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <div className="font-heading text-sm font-medium">Теги</div>
-              {tags.length === 0 ? <div className="text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Нет тегов</div> : null}
-              <div className="flex flex-wrap gap-3">
-                {tags.map((t) => {
-                  const checked = selectedTagIds.includes(t.id)
-                  return (
-                    <label key={t.id} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => {
-                          setSelectedTagIds((prev) => {
-                            const next = e.target.checked ? [...prev, t.id] : prev.filter((x) => x !== t.id)
-                            return Array.from(new Set(next))
-                          })
-                        }}
-                      />
-                      <span>{t.name}</span>
-                    </label>
-                  )
-                })}
-              </div>
-            </div>
-
+          <div className="mt-4 grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <div className="font-heading text-sm font-medium">Симптомы</div>
               {symptoms.length === 0 ? <div className="text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Нет симптомов</div> : null}

@@ -6,9 +6,11 @@ import com.mooddiary.diary.application.port.out.DiaryEntryRepositoryPort;
 import com.mooddiary.diary.application.service.UserIdentityService;
 import com.mooddiary.diary.application.usecase.GetDiaryEntryUseCase;
 import com.mooddiary.diary.domain.diary.DiaryEntry;
+import com.mooddiary.diary.domain.diary.DiaryEntryLockRules;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -44,7 +46,7 @@ public class GetDiaryEntryUseCaseImpl implements GetDiaryEntryUseCase {
                 entry.getStressScore().value(),
                 entry.getSleepQualityScore().value(),
                 entry.getNote(),
-                entry.isCompleted(),
+                DiaryEntryLockRules.isEditLocked(entry.getEntryDate(), LocalDate.now()),
                 entry.getTagIds(),
                 entry.getSymptomIds(),
                 entry.getCreatedAt(),

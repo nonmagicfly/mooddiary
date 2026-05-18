@@ -30,8 +30,8 @@ public class AnalyticsCalculatorImpl implements AnalyticsCalculator {
         AnalyticsCorrelations correlations = completedDaysCount < 2
                 ? new AnalyticsCorrelations(null, null, null)
                 : new AnalyticsCorrelations(
-                pearson(metrics, DiaryEntryAnalyticsMetric::sleepQualityScore, DiaryEntryAnalyticsMetric::moodScore),
-                pearson(metrics, DiaryEntryAnalyticsMetric::sleepQualityScore, DiaryEntryAnalyticsMetric::energyScore),
+                null,
+                null,
                 pearson(metrics, DiaryEntryAnalyticsMetric::stressScore, DiaryEntryAnalyticsMetric::productivityScore)
         );
 

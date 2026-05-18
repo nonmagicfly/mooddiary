@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mooddiary.diary.domain.diary.DiaryEntryLockRules;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -147,6 +149,7 @@ public class DiaryEntryController {
     }
 
     private DiaryEntryCreateCommand toCreateCommand(DiaryEntryUpsertRequest request) {
+        boolean locked = DiaryEntryLockRules.isEditLocked(request.entryDate(), LocalDate.now());
         return new DiaryEntryCreateCommand(
                 request.entryDate(),
                 request.moodScore(),
@@ -155,13 +158,14 @@ public class DiaryEntryController {
                 request.stressScore(),
                 request.sleepQualityScore(),
                 request.note(),
-                request.isCompleted(),
+                locked,
                 request.tagIds(),
                 request.symptomIds()
         );
     }
 
     private DiaryEntryUpdateCommand toUpdateCommand(DiaryEntryUpsertRequest request) {
+        boolean locked = DiaryEntryLockRules.isEditLocked(request.entryDate(), LocalDate.now());
         return new DiaryEntryUpdateCommand(
                 request.entryDate(),
                 request.moodScore(),
@@ -170,7 +174,7 @@ public class DiaryEntryController {
                 request.stressScore(),
                 request.sleepQualityScore(),
                 request.note(),
-                request.isCompleted(),
+                locked,
                 request.tagIds(),
                 request.symptomIds()
         );

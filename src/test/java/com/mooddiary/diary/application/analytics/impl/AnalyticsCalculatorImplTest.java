@@ -47,8 +47,8 @@ class AnalyticsCalculatorImplTest {
         assertEquals(4.0, response.avgProductivityScore());
 
         AnalyticsCorrelations correlations = response.correlations();
-        assertEquals(1.0, correlations.sleepToMood(), 1e-9);
-        assertEquals(1.0, correlations.sleepToEnergy(), 1e-9);
+        assertNull(correlations.sleepToMood());
+        assertNull(correlations.sleepToEnergy());
         assertEquals(1.0, correlations.stressToProductivity(), 1e-9);
     }
 

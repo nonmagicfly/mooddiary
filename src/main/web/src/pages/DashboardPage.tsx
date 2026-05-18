@@ -15,12 +15,6 @@ function formatScore(v: number | null | undefined): string {
   return v.toFixed(2)
 }
 
-function scoreCorrLabel(key: keyof MoodAnalyticsResponse['correlations']): string {
-  if (key === 'sleepToMood') return 'Сон → Настроение (корр.)'
-  if (key === 'sleepToEnergy') return 'Сон → Энергия (корр.)'
-  return 'Стресс → Продуктивность (корр.)'
-}
-
 export default function DashboardPage() {
   const navigate = useNavigate()
 
@@ -128,9 +122,9 @@ export default function DashboardPage() {
             </div>
             <div className="journal-divider mt-2 space-y-2 pt-2">
               {correlations ? (
-                (Object.keys(correlations) as (keyof MoodAnalyticsResponse['correlations'])[]).map((k) => (
+                (['stressToProductivity'] as const).map((k) => (
                   <div key={k} className="flex items-center justify-between gap-3">
-                    <div className="text-journal-inkMuted dark:text-journalDark-inkMuted">{scoreCorrLabel(k)}</div>
+                    <div className="text-journal-inkMuted dark:text-journalDark-inkMuted">Стресс → Продуктивность (корр.)</div>
                     <div className="font-medium">{formatScore(correlations[k] ?? null)}</div>
                   </div>
                 ))
@@ -163,7 +157,7 @@ export default function DashboardPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="font-heading text-lg font-semibold">{e.entryDate}</div>
                       <div className="text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">
-                        {e.isCompleted ? 'завершено' : 'черновик'}
+                        {e.isCompleted ? 'зафиксировано' : 'можно править'}
                       </div>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">

@@ -2,6 +2,7 @@ import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { routerFutureFlags } from '../test/routerFuture'
 import DashboardPage from './DashboardPage'
 
 vi.mock('../api/api', () => {
@@ -52,7 +53,7 @@ describe('DashboardPage', () => {
     ])
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DashboardPage />
       </MemoryRouter>
     )
