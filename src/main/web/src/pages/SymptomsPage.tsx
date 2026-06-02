@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { createSymptom, deleteSymptom, getSymptoms, updateSymptom } from '../api/api'
 import { Symptom, SymptomUpsertPayload } from '../api/types'
 
-export default function SymptomsPage() {
+export default function SymptomsPage({ embedded = false }: { embedded?: boolean }) {
   const [symptoms, setSymptoms] = useState<Symptom[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -67,10 +67,12 @@ export default function SymptomsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className={embedded ? '' : 'mx-auto max-w-3xl'}>
       <div className="mb-6">
         <h1 className="font-heading text-2xl font-semibold text-journal-ink dark:text-journalDark-ink">Симптомы</h1>
-        <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Создание, редактирование и удаление симптомов</div>
+        {!embedded ? (
+          <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Создание, редактирование и удаление симптомов</div>
+        ) : null}
       </div>
 
       <form

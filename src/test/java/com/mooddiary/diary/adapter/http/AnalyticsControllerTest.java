@@ -61,7 +61,7 @@ class AnalyticsControllerTest {
                 3.0,
                 1,
                 List.of(),
-                new AnalyticsCorrelations(null, null, null),
+                new AnalyticsCorrelations(null),
                 List.of()
         );
         when(getAnalyticsForPeriodUseCase.execute(keycloakSubject, date, date)).thenReturn(response);

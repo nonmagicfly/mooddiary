@@ -61,7 +61,7 @@ class GetAnalyticsForPeriodUseCaseImplTest {
                 2.0,
                 1,
                 List.of(),
-                new com.mooddiary.diary.application.analytics.AnalyticsCorrelations(null, null, null),
+                new com.mooddiary.diary.application.analytics.AnalyticsCorrelations(null),
                 List.of()
         );
         when(calculator.calculate(eq(from), eq(to), any(), any(), any())).thenReturn(expected);

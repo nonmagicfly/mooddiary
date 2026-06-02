@@ -4,6 +4,8 @@ import { useKeycloak } from '../auth/KeycloakContext'
 import { clearStoredKeycloakTokens } from '../auth/keycloakTokens'
 import { getTelegramChatId, updateTelegramChatId } from '../api/api'
 import { UUID } from '../api/types'
+import TagsPage from './TagsPage'
+import SymptomsPage from './SymptomsPage'
 
 function getAccessToken(): string | null {
   return localStorage.getItem('access_token')
@@ -98,20 +100,22 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-4">
-        <div className="journal-card p-4">
-          <div className="font-heading text-sm font-medium">Справочники</div>
-          <div className="mt-2 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">
-            Управление списками тегов и симптомов для записей.
+        <section className="journal-card space-y-5 p-4">
+          <div>
+            <div className="font-heading text-sm font-medium">Справочники</div>
+            <div className="mt-2 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">
+              Управляйте тегами и симптомами здесь; в записи они выбираются быстрыми кнопками.
+            </div>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" className="journal-btn-secondary py-2" onClick={() => navigate('/diary/tags')}>
-              Теги
-            </button>
-            <button type="button" className="journal-btn-secondary py-2" onClick={() => navigate('/diary/symptoms')}>
-              Симптомы
-            </button>
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div className="min-w-0">
+              <TagsPage embedded />
+            </div>
+            <div className="min-w-0">
+              <SymptomsPage embedded />
+            </div>
           </div>
-        </div>
+        </section>
 
         <div className="journal-card p-4">
           <div className="font-heading text-sm font-medium">Telegram</div>

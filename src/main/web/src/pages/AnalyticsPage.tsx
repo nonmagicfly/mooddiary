@@ -12,7 +12,7 @@ function isoDate(d: Date): string {
 }
 
 function defaultCorrelations(): AnalyticsCorrelations {
-  return { sleepToMood: null, sleepToEnergy: null, stressToProductivity: null }
+  return { stressToProductivity: null }
 }
 
 export default function AnalyticsPage() {
@@ -38,6 +38,8 @@ export default function AnalyticsPage() {
   }, [fetcher])
 
   const correlations = data?.correlations ?? defaultCorrelations()
+  const series = data?.series ?? []
+  const tagFrequencies = data?.tagFrequencies ?? []
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -86,7 +88,7 @@ export default function AnalyticsPage() {
             <div className="font-heading text-sm font-medium">Динамика (по дням)</div>
             <div className="journal-card mt-3 p-3">
               <SeriesLineChart
-                points={data.series}
+                points={series}
                 height={140}
               />
             </div>
@@ -136,11 +138,11 @@ export default function AnalyticsPage() {
 
           <div className="journal-card p-4">
             <div className="font-heading text-sm font-medium">Популярные теги</div>
-            {data.tagFrequencies.length === 0 ? (
+            {tagFrequencies.length === 0 ? (
               <div className="mt-2 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Нет тегов за этот период.</div>
             ) : (
               <div className="mt-3 space-y-2">
-                <TagBarList items={data.tagFrequencies.slice(0, 10)} />
+                <TagBarList items={tagFrequencies.slice(0, 10)} />
               </div>
             )}
           </div>
@@ -218,11 +220,12 @@ function TagBarList({ items }: { items: { tagId: string; tagName: string; tagCol
 }
 
 function SeriesLineChart({ points, height }: { points: { entryDate: string; moodScore: number; energyScore: number; productivityScore: number }[]; height: number }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+
   if (!points || points.length === 0) {
     return <div className="text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Нет записей за этот период.</div>
   }
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const hovered = hoveredIndex === null ? null : points[hoveredIndex]
 
   const width = 600

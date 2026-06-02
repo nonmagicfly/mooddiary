@@ -24,7 +24,8 @@ vi.mock('../api/api', () => {
     updateDiaryEntry: vi.fn(),
     getTags: vi.fn().mockResolvedValue([]),
     getSymptoms: vi.fn().mockResolvedValue([]),
-    uploadDiaryEntryPhotos: vi.fn().mockResolvedValue([])
+    uploadDiaryEntryPhotos: vi.fn().mockResolvedValue([]),
+    sendSummaryToTelegram: vi.fn().mockResolvedValue(undefined)
   }
 })
 
@@ -82,6 +83,16 @@ describe('DiaryEntryPage', () => {
     const payload = (createDiaryEntry as unknown as vi.Mock).mock.calls[0][0]
     expect(payload.tagIds).toEqual([tag1.id])
     expect(payload.symptomIds).toEqual([symptom1.id])
+    expect(payload.sleepQualityScore).toBe(5)
+    expect(payload.isCompleted).toBe(false)
+  })
+
+  it('should not render sleep quality or completed-day controls', async () => {
+    render(diaryEntryRoutes('/diary/entry/new'))
+
+    expect(await screen.findByText('Новая запись')).toBeInTheDocument()
+    expect(screen.queryByText(/качество сна/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/день заверш/i)).not.toBeInTheDocument()
   })
 
   it('should load entry and populate form on edit', async () => {

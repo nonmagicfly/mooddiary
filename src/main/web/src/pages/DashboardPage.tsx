@@ -157,7 +157,7 @@ export default function DashboardPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="font-heading text-lg font-semibold">{e.entryDate}</div>
                       <div className="text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">
-                        {e.isCompleted ? 'зафиксировано' : 'можно править'}
+                        {e.isCompleted ? 'редактирование закрыто' : 'можно править 3 дня'}
                       </div>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">

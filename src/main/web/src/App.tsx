@@ -5,8 +5,6 @@ import { DefaultRedirect, ProtectedRoute } from './auth/ProtectedRoute'
 import DiaryEntryPage from './pages/DiaryEntryPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import DiaryHistoryPage from './pages/DiaryHistoryPage'
-import TagsPage from './pages/TagsPage'
-import SymptomsPage from './pages/SymptomsPage'
 import SettingsPage from './pages/SettingsPage'
 import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
@@ -63,7 +61,6 @@ function HeaderAuth() {
 
 function isActivePath(pathname: string, href: string) {
   if (href === '/diary/entry/new') return pathname === href || pathname.startsWith('/diary/entry/')
-  if (href === '/diary/settings') return pathname === href || pathname === '/diary/tags' || pathname === '/diary/symptoms'
   return pathname === href
 }
 
@@ -172,8 +169,6 @@ function AppShell() {
               <Route path="/diary/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
               <Route path="/diary/history" element={<ProtectedRoute><DiaryHistoryPage /></ProtectedRoute>} />
               <Route path="/diary/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/diary/tags" element={<ProtectedRoute><TagsPage /></ProtectedRoute>} />
-              <Route path="/diary/symptoms" element={<ProtectedRoute><SymptomsPage /></ProtectedRoute>} />
               <Route path="/diary/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="*" element={<DefaultRedirect />} />
             </Routes>
@@ -213,7 +208,7 @@ function AppShell() {
                 Аналитика
               </a>
               <a
-                className={`flex flex-col items-center gap-0.5 rounded-2xl px-3 py-2 text-xs transition-colors ${location.pathname === '/diary/settings' || location.pathname === '/diary/tags' || location.pathname === '/diary/symptoms' ? 'bg-journal-fold text-journal-accent dark:bg-journalDark-fold dark:text-journalDark-accent' : 'text-journal-inkMuted dark:text-journalDark-inkMuted'}`}
+                className={`flex flex-col items-center gap-0.5 rounded-2xl px-3 py-2 text-xs transition-colors ${location.pathname === '/diary/settings' ? 'bg-journal-fold text-journal-accent dark:bg-journalDark-fold dark:text-journalDark-accent' : 'text-journal-inkMuted dark:text-journalDark-inkMuted'}`}
                 href="/diary/settings"
               >
                 <span className="text-lg">⚙️</span>

@@ -29,7 +29,7 @@ describe('DashboardPage', () => {
       avgProductivityScore: 5,
       completedDaysCount: 2,
       tagFrequencies: [],
-      correlations: { sleepToMood: 0.2, sleepToEnergy: null, stressToProductivity: 0.1 },
+      correlations: { stressToProductivity: 0.1 },
       series: []
     })
 
@@ -64,6 +64,7 @@ describe('DashboardPage', () => {
     // "4.00" can appear multiple times (cards/correlations), so just assert it exists.
     expect(screen.getAllByText('4.00').length).toBeGreaterThan(0)
     expect(screen.getByText('2026-03-19')).toBeInTheDocument()
+    expect(screen.getByText('редактирование закрыто')).toBeInTheDocument()
   })
 })
 

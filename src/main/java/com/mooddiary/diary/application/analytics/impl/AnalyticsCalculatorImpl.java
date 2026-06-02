@@ -28,10 +28,8 @@ public class AnalyticsCalculatorImpl implements AnalyticsCalculator {
         Double avgProductivity = completedDaysCount == 0 ? null : average(metrics, DiaryEntryAnalyticsMetric::productivityScore);
 
         AnalyticsCorrelations correlations = completedDaysCount < 2
-                ? new AnalyticsCorrelations(null, null, null)
+                ? new AnalyticsCorrelations(null)
                 : new AnalyticsCorrelations(
-                null,
-                null,
                 pearson(metrics, DiaryEntryAnalyticsMetric::stressScore, DiaryEntryAnalyticsMetric::productivityScore)
         );
 

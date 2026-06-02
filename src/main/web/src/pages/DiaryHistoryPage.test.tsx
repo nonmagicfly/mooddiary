@@ -123,15 +123,14 @@ describe('DiaryHistoryPage', () => {
       avgProductivityScore: 4,
       completedDaysCount: 3,
       tagFrequencies: [],
-      correlations: { sleepToMood: null, sleepToEnergy: null, stressToProductivity: null },
+      correlations: { stressToProductivity: null },
       series: [
         {
           entryDate: '2026-03-13',
           moodScore: 5,
           energyScore: 6,
           productivityScore: 4,
-          stressScore: 5,
-          sleepQualityScore: 6
+          stressScore: 5
         }
       ]
     })
@@ -165,7 +164,7 @@ describe('DiaryHistoryPage', () => {
       avgProductivityScore: 7,
       completedDaysCount: 10,
       tagFrequencies: [{ tagId: 't1', tagName: 'work', tagColor: null, count: 4 }],
-      correlations: { sleepToMood: null, sleepToEnergy: null, stressToProductivity: null },
+      correlations: { stressToProductivity: null },
       series: []
     })
 

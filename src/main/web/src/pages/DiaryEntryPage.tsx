@@ -4,6 +4,7 @@ import { createDiaryEntry, getDiaryEntry, getSymptoms, getTags, uploadDiaryEntry
 import { DiaryEntryUpsertPayload, Tag, Symptom, UUID } from '../api/types'
 
 type Mode = 'create' | 'edit'
+const LEGACY_SLEEP_QUALITY_SCORE = 5
 
 function todayIsoDate(): string {
   const d = new Date()
@@ -32,8 +33,6 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
   )
 
   const [form, setForm] = useState(initialForm)
-  /** Kept for API; hidden from UI (legacy column). */
-  const [sleepQualityScore, setSleepQualityScore] = useState(5)
   const [entryReadOnly, setEntryReadOnly] = useState(false)
   const [loading, setLoading] = useState(mode === 'edit')
   const [saving, setSaving] = useState(false)
@@ -85,7 +84,6 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
           stressScore: entry.stressScore,
           note: entry.note ?? ''
         })
-        setSleepQualityScore(entry.sleepQualityScore)
         setEntryReadOnly(entry.isCompleted)
         setUiSelectedTagIds(entry.tagIds)
         setUiSelectedSymptomIds(entry.symptomIds)
@@ -103,13 +101,13 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
       energyScore: form.energyScore,
       productivityScore: form.productivityScore,
       stressScore: form.stressScore,
-      sleepQualityScore,
+      sleepQualityScore: LEGACY_SLEEP_QUALITY_SCORE,
       note: form.note.trim() ? form.note : null,
       isCompleted: false,
       tagIds: Array.from(new Set(uiSelectedTagIds)),
       symptomIds: Array.from(new Set(uiSelectedSymptomIds))
     }
-  }, [form, sleepQualityScore, uiSelectedTagIds, uiSelectedSymptomIds])
+  }, [form, uiSelectedTagIds, uiSelectedSymptomIds])
 
   const submit = async () => {
     if (entryReadOnly) return
@@ -146,7 +144,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
         <div className="journal-eyebrow">{mode === 'create' ? 'Новая страница' : 'Возвращение к странице'}</div>
         <h1 className="journal-title mt-3">{mode === 'create' ? 'Новая запись' : 'Редактирование записи'}</h1>
         <p className="journal-subtitle">
-          Оцените день по шкале от 1 до 10 и оставьте пару строк, чтобы позже увидеть не только цифры, но и контекст.
+          Оцените эмоции по шкале от 1 до 10 и оставьте пару строк. Запись можно править и дополнять фото в течение трёх дней.
         </p>
       </div>
 

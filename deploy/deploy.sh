@@ -6,6 +6,15 @@ set -e
 
 cd "$(dirname "$0")"
 
+if docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker-compose"
+else
+  echo "Docker Compose is required (docker compose or docker-compose)"
+  exit 1
+fi
+
 # Загрузка .env если есть
 [[ -f .env ]] && set -a && source .env && set +a
 
@@ -21,11 +30,13 @@ export AUTH_DOMAIN="${AUTH_DOMAIN:-$DOMAIN}"
 # Генерация realm и nginx с подстановкой доменов
 export DOMAIN
 export PROTOCOL=${PROTOCOL:-https}
+export SSL_CERT_PATH=${SSL_CERT_PATH:-/etc/nginx/ssl/fullchain.pem}
+export SSL_CERT_KEY_PATH=${SSL_CERT_KEY_PATH:-/etc/nginx/ssl/privkey.pem}
 envsubst '${DOMAIN} ${PROTOCOL}' < keycloak-realm.json.template > keycloak-realm.json
-envsubst '${DOMAIN} ${AUTH_DOMAIN}' < nginx.conf.template > nginx.runtime.conf
+envsubst '${DOMAIN} ${AUTH_DOMAIN} ${SSL_CERT_PATH} ${SSL_CERT_KEY_PATH}' < nginx.conf.template > nginx.runtime.conf
 
 echo "Деплой MoodDiary: приложение ${PROTOCOL}://${DOMAIN}, Keycloak ${PROTOCOL}://${AUTH_DOMAIN}..."
-docker-compose -f docker-compose.prod.yml up -d --build
+${DOCKER_COMPOSE} -f docker-compose.prod.yml up -d --build
 
 echo ""
 echo "Готово! Приложение: ${PROTOCOL}://${DOMAIN}"

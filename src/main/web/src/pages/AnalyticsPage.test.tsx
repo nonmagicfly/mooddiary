@@ -30,7 +30,7 @@ describe('AnalyticsPage', () => {
       avgProductivityScore: 5,
       completedDaysCount: 7,
       tagFrequencies: [],
-      correlations: { sleepToMood: null, sleepToEnergy: null, stressToProductivity: 0.5 },
+      correlations: { stressToProductivity: 0.5 },
       series: []
     }
 

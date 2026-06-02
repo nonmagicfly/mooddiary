@@ -65,8 +65,6 @@ export type TagFrequencyAnalytics = {
 }
 
 export type AnalyticsCorrelations = {
-  sleepToMood: number | null
-  sleepToEnergy: number | null
   stressToProductivity: number | null
 }
 
@@ -85,7 +83,6 @@ export type MoodAnalyticsResponse = {
     energyScore: number
     productivityScore: number
     stressScore: number
-    sleepQualityScore: number
   }[]
 }
 

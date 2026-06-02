@@ -63,21 +63,35 @@ docker-compose -f docker-compose.prod.yml up -d --build
 3. Создайте пользователя в Keycloak Admin: `https://<AUTH_DOMAIN>/admin` (если задан `AUTH_DOMAIN`), иначе `https://<DOMAIN>/admin` (логин: admin, пароль из `KEYCLOAK_ADMIN_PASSWORD`)
 4. В Realm `mooddiary` → Users → Add user
 
-## HTTPS (Let's Encrypt)
+## HTTPS (GlobalSign / внешний сертификат)
 
-1. Установите certbot: `apt install certbot`
-2. Получите сертификат для всех имён (при раздельных доменах):  
-   `certbot certonly --standalone -d mooddiary.yourdomain.com -d auth.yourdomain.com`
-3. Создайте папку и скопируйте сертификаты:
+1. Подготовьте сертификат и ключ для nginx.
 
-```bash
-mkdir -p deploy/ssl
-cp /etc/letsencrypt/live/mooddiary.yourdomain.com/fullchain.pem deploy/ssl/
-cp /etc/letsencrypt/live/mooddiary.yourdomain.com/privkey.pem deploy/ssl/
+По умолчанию compose монтирует `deploy/ssl` в контейнер как `/etc/nginx/ssl`.
+Положите туда:
+
+```
+deploy/ssl/fullchain.pem
+deploy/ssl/privkey.pem
 ```
 
-4. Раскомментируйте и настройте HTTPS в `deploy/nginx.conf.template` для **обоих** блоков `server` и перегенерайте `nginx.runtime.conf` (как в `deploy.sh`)
-5. Перезапустите: `docker-compose -f deploy/docker-compose.prod.yml restart nginx`
+`fullchain.pem` должен содержать серверный сертификат GlobalSign и промежуточные сертификаты в правильном порядке.
+
+Если сертификаты лежат в другом каталоге на VPS, задайте в `.env`:
+
+```bash
+SSL_DIR=/path/to/cert-dir
+SSL_CERT_PATH=/etc/nginx/ssl/fullchain.pem
+SSL_CERT_KEY_PATH=/etc/nginx/ssl/privkey.pem
+```
+
+2. Перегенерируйте production-конфиги и перезапустите nginx:
+
+```bash
+source .env
+./deploy.sh
+docker compose -f docker-compose.prod.yml restart nginx
+```
 
 ## Переменные окружения
 

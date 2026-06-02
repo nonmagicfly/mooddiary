@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { deleteTag, getTags, createTag, updateTag } from '../api/api'
 import { Tag, TagUpsertPayload } from '../api/types'
 
-export default function TagsPage() {
+export default function TagsPage({ embedded = false }: { embedded?: boolean }) {
   const [tags, setTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -74,10 +74,12 @@ export default function TagsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className={embedded ? '' : 'mx-auto max-w-3xl'}>
       <div className="mb-6">
         <h1 className="font-heading text-2xl font-semibold text-journal-ink dark:text-journalDark-ink">Теги</h1>
-        <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Создание, редактирование и удаление тегов</div>
+        {!embedded ? (
+          <div className="mt-1 text-sm text-journal-inkMuted dark:text-journalDark-inkMuted">Создание, редактирование и удаление тегов</div>
+        ) : null}
       </div>
 
       <form

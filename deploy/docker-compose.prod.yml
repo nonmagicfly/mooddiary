@@ -90,6 +90,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.runtime.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${SSL_DIR:-./ssl}:/etc/nginx/ssl:ro
     depends_on:
       - backend
     networks:

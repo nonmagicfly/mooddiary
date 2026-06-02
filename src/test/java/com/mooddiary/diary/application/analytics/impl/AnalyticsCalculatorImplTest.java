@@ -47,8 +47,6 @@ class AnalyticsCalculatorImplTest {
         assertEquals(4.0, response.avgProductivityScore());
 
         AnalyticsCorrelations correlations = response.correlations();
-        assertNull(correlations.sleepToMood());
-        assertNull(correlations.sleepToEnergy());
         assertEquals(1.0, correlations.stressToProductivity(), 1e-9);
     }
 
@@ -65,8 +63,6 @@ class AnalyticsCalculatorImplTest {
 
         MoodAnalyticsResponse response = calculator.calculate(from, to, metrics, List.of(), List.of());
 
-        assertNull(response.correlations().sleepToMood());
-        assertNull(response.correlations().sleepToEnergy());
         assertNull(response.correlations().stressToProductivity());
     }
 }
