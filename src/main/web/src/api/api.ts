@@ -35,7 +35,14 @@ async function apiRequest<T>(path: string, init: RequestInit): Promise<T> {
       throw new Error(`Request failed with status ${res.status}`)
     }
   }
-  return parseJsonSafe<T>(res)
+  if (res.status === 204) {
+    return undefined as T
+  }
+  const text = await res.text()
+  if (!text) {
+    return undefined as T
+  }
+  return JSON.parse(text) as T
 }
 
 function authHeaders(): Record<string, string> {

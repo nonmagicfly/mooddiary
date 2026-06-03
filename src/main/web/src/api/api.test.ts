@@ -1,5 +1,5 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
-import { createDiaryEntry, getDiaryEntry } from './api'
+import { createDiaryEntry, deleteSymptom, getDiaryEntry } from './api'
 
 describe('api', () => {
   beforeEach(() => {
@@ -53,6 +53,18 @@ describe('api', () => {
     const init = fetchMock.mock.calls[0][1] as RequestInit
     const body = init?.body as string
     expect(body).toContain('"entryDate":"2026-01-01"')
+  })
+
+  it('should treat 204 no content as successful void response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      text: async () => ''
+    } as unknown as Response)
+
+    ;(globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock
+
+    await expect(deleteSymptom('symptom-1')).resolves.toBeUndefined()
   })
 })
 
