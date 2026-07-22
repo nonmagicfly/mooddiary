@@ -33,12 +33,6 @@ public class DiaryEntryRepositoryJpaAdapter implements DiaryEntryRepositoryPort 
 
     @Override
     @Transactional(readOnly = true)
-    public boolean existsByUserIdAndEntryDate(UUID userId, LocalDate entryDate) {
-        return diaryEntryJpaRepository.existsByUserIdAndEntryDate(userId, entryDate);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<DiaryEntry> findByIdAndUserId(UUID diaryEntryId, UUID userId) {
         return diaryEntryJpaRepository.findByIdAndUserId(diaryEntryId, userId)
                 .map(this::mapToDomain);
@@ -47,7 +41,7 @@ public class DiaryEntryRepositoryJpaAdapter implements DiaryEntryRepositoryPort 
     @Override
     @Transactional(readOnly = true)
     public List<DiaryEntry> findByUserId(UUID userId, LocalDate from, LocalDate to, int limit) {
-        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "entryDate"));
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "entryDate", "createdAt"));
         if (from == null && to == null) {
             return diaryEntryJpaRepository.findByUserIdOrderByEntryDateDesc(userId, pageable)
                     .stream().map(this::mapToDomain).toList();

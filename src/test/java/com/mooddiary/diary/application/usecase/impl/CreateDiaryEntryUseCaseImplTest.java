@@ -2,7 +2,6 @@ package com.mooddiary.diary.application.usecase.impl;
 
 import com.mooddiary.diary.application.diary.DiaryEntryCreateCommand;
 import com.mooddiary.diary.application.diary.DiaryEntryResponse;
-import com.mooddiary.diary.application.exception.ConflictAppException;
 import com.mooddiary.diary.application.exception.ValidationAppException;
 import com.mooddiary.diary.application.port.out.DiaryEntryRepositoryPort;
 import com.mooddiary.diary.application.port.out.SymptomRepositoryPort;
@@ -19,12 +18,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +56,6 @@ class CreateDiaryEntryUseCaseImplTest {
         Instant updatedAt = Instant.now().minusSeconds(60);
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
-        when(diaryEntryRepositoryPort.existsByUserIdAndEntryDate(userId, entryDate)).thenReturn(false);
         when(tagRepositoryPort.existsByIdAndUserId(tagId, userId)).thenReturn(true);
         when(symptomRepositoryPort.existsByIdAndUserId(symptomId, userId)).thenReturn(true);
 
@@ -118,23 +116,63 @@ class CreateDiaryEntryUseCaseImplTest {
     }
 
     @Test
-    void shouldThrowConflictWhenEntryExists() {
+    void shouldAllowMultipleEntriesForSameDate() {
         UUID userId = UUID.randomUUID();
         String keycloakSubject = "sub-1";
         LocalDate entryDate = LocalDate.now();
+        UUID firstEntryId = UUID.randomUUID();
+        UUID secondEntryId = UUID.randomUUID();
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
-        when(diaryEntryRepositoryPort.existsByUserIdAndEntryDate(userId, entryDate)).thenReturn(true);
+
+        DiaryEntry firstSaved = DiaryEntry.fromPersistence(
+                firstEntryId,
+                userId,
+                entryDate,
+                Score1to10.of(5),
+                Score1to10.of(5),
+                Score1to10.of(5),
+                Score1to10.of(5),
+                Score1to10.of(5),
+                null,
+                false,
+                Set.of(),
+                Set.of(),
+                Instant.now(),
+                null
+        );
+        DiaryEntry secondSaved = DiaryEntry.fromPersistence(
+                secondEntryId,
+                userId,
+                entryDate,
+                Score1to10.of(7),
+                Score1to10.of(6),
+                Score1to10.of(8),
+                Score1to10.of(4),
+                Score1to10.of(5),
+                "second",
+                false,
+                Set.of(),
+                Set.of(),
+                Instant.now(),
+                null
+        );
+        when(diaryEntryRepositoryPort.save(org.mockito.ArgumentMatchers.any(DiaryEntry.class)))
+                .thenReturn(firstSaved, secondSaved);
 
         DiaryEntryCreateCommand command = new DiaryEntryCreateCommand(
-                entryDate, 1, 2, 3, 4, 5,
+                entryDate, 5, 5, 5, 5, 5,
                 null,
                 false,
                 Set.of(),
                 Set.of()
         );
 
-        assertThrows(ConflictAppException.class, () -> useCase.execute(keycloakSubject, command));
+        useCase.execute(keycloakSubject, command);
+        DiaryEntryResponse secondResponse = useCase.execute(keycloakSubject, command);
+
+        assertEquals(secondEntryId, secondResponse.id());
+        verify(diaryEntryRepositoryPort, times(2)).save(org.mockito.ArgumentMatchers.any(DiaryEntry.class));
     }
 
     @Test
@@ -145,7 +183,6 @@ class CreateDiaryEntryUseCaseImplTest {
         UUID tagId = UUID.randomUUID();
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
-        when(diaryEntryRepositoryPort.existsByUserIdAndEntryDate(userId, entryDate)).thenReturn(false);
         when(tagRepositoryPort.existsByIdAndUserId(tagId, userId)).thenReturn(false);
 
         DiaryEntryCreateCommand command = new DiaryEntryCreateCommand(
@@ -167,7 +204,6 @@ class CreateDiaryEntryUseCaseImplTest {
         UUID symptomId = UUID.randomUUID();
 
         when(userIdentityService.getOrCreateUserId(keycloakSubject)).thenReturn(userId);
-        when(diaryEntryRepositoryPort.existsByUserIdAndEntryDate(userId, entryDate)).thenReturn(false);
         when(symptomRepositoryPort.existsByIdAndUserId(symptomId, userId)).thenReturn(false);
 
         DiaryEntryCreateCommand command = new DiaryEntryCreateCommand(
@@ -181,4 +217,3 @@ class CreateDiaryEntryUseCaseImplTest {
         assertThrows(ValidationAppException.class, () -> useCase.execute(keycloakSubject, command));
     }
 }
-

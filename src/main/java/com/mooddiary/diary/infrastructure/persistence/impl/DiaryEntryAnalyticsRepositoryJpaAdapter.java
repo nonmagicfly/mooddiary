@@ -97,7 +97,7 @@ public class DiaryEntryAnalyticsRepositoryJpaAdapter implements DiaryEntryAnalyt
                         where de.userId = :userId
                           and de.entryDate >= :from
                           and de.entryDate <= :to
-                        order by de.entryDate asc
+                        order by de.entryDate asc, de.createdAt asc
                         """,
                         DiaryEntrySeriesPointRow.class
                 )

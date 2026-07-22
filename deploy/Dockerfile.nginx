@@ -21,7 +21,8 @@ COPY src/main/web/package.json src/main/web/package-lock.json ./
 RUN npm ci
 
 COPY src/main/web/ ./
-RUN npm run build
+# Host node_modules (e.g. from Windows) can break Linux execute bits — reinstall in image.
+RUN rm -rf node_modules && npm ci && npm run build
 
 FROM nginx:alpine
 COPY --from=frontend-build /app/dist /usr/share/nginx/html

@@ -9,8 +9,6 @@ import java.util.UUID;
 
 public interface DiaryEntryRepositoryPort {
 
-    boolean existsByUserIdAndEntryDate(UUID userId, LocalDate entryDate);
-
     Optional<DiaryEntry> findByIdAndUserId(UUID diaryEntryId, UUID userId);
 
     List<DiaryEntry> findByUserId(UUID userId, LocalDate from, LocalDate to, int limit);

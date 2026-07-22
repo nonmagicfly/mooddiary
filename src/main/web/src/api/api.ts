@@ -17,23 +17,37 @@ function getAccessToken(): string | null {
   return localStorage.getItem('access_token')
 }
 
-async function parseJsonSafe<T>(response: Response): Promise<T> {
-  const text = await response.text()
-  if (!text) {
-    throw new Error(`Request failed with status ${response.status}`)
+export class ApiRequestError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiRequestError'
+    this.status = status
   }
-  return JSON.parse(text) as T
+}
+
+function errorMessageForStatus(status: number, message?: string): string {
+  if (message) return message
+  if (status === 409) return 'Запись за эту дату уже существует'
+  if (status === 413) return 'Файл слишком большой. Попробуйте фото меньшего размера.'
+  return `Request failed with status ${status}`
 }
 
 async function apiRequest<T>(path: string, init: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, init)
   if (!res.ok) {
+    let message: string | undefined
     try {
-      const body = await parseJsonSafe<{ message?: string }>(res)
-      throw new Error(body.message || `Request failed with status ${res.status}`)
+      const text = await res.text()
+      if (text) {
+        const body = JSON.parse(text) as { message?: string }
+        message = body.message
+      }
     } catch {
-      throw new Error(`Request failed with status ${res.status}`)
+      // non-JSON error body (e.g. nginx 413 page)
     }
+    throw new ApiRequestError(errorMessageForStatus(res.status, message), res.status)
   }
   if (res.status === 204) {
     return undefined as T

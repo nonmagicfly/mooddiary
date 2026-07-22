@@ -2,7 +2,6 @@ package com.mooddiary.diary.application.usecase.impl;
 
 import com.mooddiary.diary.application.diary.DiaryEntryCreateCommand;
 import com.mooddiary.diary.application.diary.DiaryEntryResponse;
-import com.mooddiary.diary.application.exception.ConflictAppException;
 import com.mooddiary.diary.application.exception.ValidationAppException;
 import com.mooddiary.diary.application.port.out.DiaryEntryRepositoryPort;
 import com.mooddiary.diary.application.port.out.SymptomRepositoryPort;
@@ -42,10 +41,6 @@ public class CreateDiaryEntryUseCaseImpl implements CreateDiaryEntryUseCase {
         UUID userId = userIdentityService.getOrCreateUserId(keycloakSubject);
         if (command.entryDate() == null) {
             throw new ValidationAppException("entryDate is required");
-        }
-        boolean exists = diaryEntryRepositoryPort.existsByUserIdAndEntryDate(userId, command.entryDate());
-        if (exists) {
-            throw new ConflictAppException("Diary entry for this date already exists");
         }
 
         validateTagIds(userId, command.tagIds());

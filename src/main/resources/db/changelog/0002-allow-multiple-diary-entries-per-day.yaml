@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-drop-diary-entry-date-unique
+      author: mooddiary
+      preConditions:
+        - onFail: MARK_RAN
+        - uniqueConstraintExists:
+            tableName: diary_entries
+            constraintName: uq_diary_entries_user_entry_date
+      changes:
+        - dropUniqueConstraint:
+            tableName: diary_entries
+            constraintName: uq_diary_entries_user_entry_date
+  - changeSet:
+      id: 0002-create-diary-entry-date-index
+      author: mooddiary
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - indexExists:
+                tableName: diary_entries
+                indexName: idx_diary_entries_user_entry_date
+      changes:
+        - createIndex:
+            tableName: diary_entries
+            indexName: idx_diary_entries_user_entry_date
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: entry_date

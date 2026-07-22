@@ -73,7 +73,7 @@ public class UploadDiaryEntryPhotosUseCaseImpl implements UploadDiaryEntryPhotos
             throw new ValidationAppException("file size is invalid");
         }
         if (file.size() > config.getMaxFileSizeBytes()) {
-            throw new ValidationAppException("file is too large");
+            throw new ValidationAppException("Файл слишком большой. Попробуйте фото меньшего размера.");
         }
         if (file.contentType() == null || !file.contentType().startsWith("image/")) {
             throw new ValidationAppException("file contentType must be image/*");

@@ -17,8 +17,20 @@ function diaryEntryRoutes(initial: string) {
   )
 }
 
+vi.mock('../utils/compressImage', () => ({
+  compressImageFiles: vi.fn((files: File[]) => Promise.resolve(files))
+}))
+
 vi.mock('../api/api', () => {
   return {
+    ApiRequestError: class ApiRequestError extends Error {
+      status: number
+      constructor(message: string, status: number) {
+        super(message)
+        this.name = 'ApiRequestError'
+        this.status = status
+      }
+    },
     getDiaryEntry: vi.fn(),
     createDiaryEntry: vi.fn(),
     updateDiaryEntry: vi.fn(),
@@ -29,11 +41,15 @@ vi.mock('../api/api', () => {
   }
 })
 
-import { createDiaryEntry, getDiaryEntry, getSymptoms, getTags, uploadDiaryEntryPhotos } from '../api/api'
+import { ApiRequestError, createDiaryEntry, getDiaryEntry, getSymptoms, getTags, uploadDiaryEntryPhotos } from '../api/api'
 
 describe('DiaryEntryPage', () => {
   beforeEach(() => {
     localStorage.clear()
+    vi.clearAllMocks()
+    ;(getTags as unknown as vi.Mock).mockResolvedValue([])
+    ;(getSymptoms as unknown as vi.Mock).mockResolvedValue([])
+    ;(uploadDiaryEntryPhotos as unknown as vi.Mock).mockResolvedValue([])
   })
 
   it('should submit selected tag/symptom ids on create', async () => {
@@ -178,6 +194,45 @@ describe('DiaryEntryPage', () => {
       expect(createDiaryEntry).toHaveBeenCalled()
       expect(uploadDiaryEntryPhotos).toHaveBeenCalled()
       expect(uploadDiaryEntryPhotos).toHaveBeenCalledWith(created.id, expect.any(Array))
+    })
+  })
+
+  it('should save entry and show warning when photo upload fails', async () => {
+    const user = userEvent.setup()
+
+    const created = {
+      userId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+      entryDate: '2026-03-19',
+      moodScore: 5,
+      energyScore: 5,
+      productivityScore: 5,
+      stressScore: 5,
+      sleepQualityScore: 5,
+      note: null,
+      isCompleted: false,
+      tagIds: [],
+      symptomIds: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: null
+    }
+
+    ;(createDiaryEntry as unknown as vi.Mock).mockResolvedValue(created)
+    ;(uploadDiaryEntryPhotos as unknown as vi.Mock).mockRejectedValue(new ApiRequestError('Файл слишком большой. Попробуйте фото меньшего размера.', 413))
+    ;(getDiaryEntry as unknown as vi.Mock).mockResolvedValue(created)
+
+    const { container } = render(diaryEntryRoutes('/diary/entry/new'))
+
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement
+    const file = new File(['hello'], 'a.png', { type: 'image/png' })
+    await user.upload(fileInput, file)
+
+    const submitButton = screen.getByRole('button', { name: /Создать запись/i })
+    await user.click(submitButton)
+
+    await waitFor(() => {
+      expect(createDiaryEntry).toHaveBeenCalled()
+      expect(screen.getByText(/Файл слишком большой/i)).toBeInTheDocument()
     })
   })
 })

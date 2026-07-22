@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "mooddiary.upload.photo")
 public class PhotoUploadProperties {
-    private long maxFileSizeBytes = 10_485_760;
+    private long maxFileSizeBytes = 26_214_400;
     private String storageDir = "./data/photos";
 
     public long getMaxFileSizeBytes() {

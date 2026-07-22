@@ -1,7 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { createDiaryEntry, getDiaryEntry, getSymptoms, getTags, uploadDiaryEntryPhotos, updateDiaryEntry, sendSummaryToTelegram } from '../api/api'
-import { DiaryEntryUpsertPayload, Tag, Symptom, UUID } from '../api/types'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  createDiaryEntry,
+  getDiaryEntry,
+  getSymptoms,
+  getTags,
+  uploadDiaryEntryPhotos,
+  updateDiaryEntry,
+  sendSummaryToTelegram
+} from '../api/api'
+import { DiaryEntry, DiaryEntryUpsertPayload, Tag, Symptom, UUID } from '../api/types'
+import { compressImageFiles } from '../utils/compressImage'
 
 type Mode = 'create' | 'edit'
 const LEGACY_SLEEP_QUALITY_SCORE = 5
@@ -16,6 +25,7 @@ function todayIsoDate(): string {
 
 export default function DiaryEntryPage({ mode }: { mode: Mode }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const params = useParams()
 
   const entryId = mode === 'edit' ? params.id : undefined
@@ -39,6 +49,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
+  const [preparingPhotos, setPreparingPhotos] = useState(false)
   const [telegramSending, setTelegramSending] = useState(false)
   const [telegramError, setTelegramError] = useState<string | null>(null)
 
@@ -46,6 +57,13 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
   const [availableSymptoms, setAvailableSymptoms] = useState<Symptom[]>([])
   const [uiSelectedTagIds, setUiSelectedTagIds] = useState<UUID[]>([])
   const [uiSelectedSymptomIds, setUiSelectedSymptomIds] = useState<UUID[]>([])
+
+  useEffect(() => {
+    const uploadWarning = (location.state as { uploadWarning?: string } | null)?.uploadWarning
+    if (!uploadWarning) return
+    setWarning(uploadWarning)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate])
 
   useEffect(() => {
     if (mode === 'create') setEntryReadOnly(false)
@@ -109,6 +127,14 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
     }
   }, [form, uiSelectedTagIds, uiSelectedSymptomIds])
 
+  const saveEntry = async (finalPayload: DiaryEntryUpsertPayload): Promise<DiaryEntry> => {
+    if (mode === 'edit') {
+      if (!entryId) throw new Error('Entry id is missing')
+      return updateDiaryEntry(entryId, finalPayload)
+    }
+    return createDiaryEntry(finalPayload)
+  }
+
   const submit = async () => {
     if (entryReadOnly) return
     setError(null)
@@ -117,20 +143,17 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
 
     setSaving(true)
     try {
-      if (mode === 'create') {
-        const created = await createDiaryEntry(finalPayload)
-        if (selectedPhotos.length > 0) {
-          await uploadDiaryEntryPhotos(created.id, selectedPhotos)
+      const saved = await saveEntry(finalPayload)
+      if (selectedPhotos.length > 0) {
+        try {
+          await uploadDiaryEntryPhotos(saved.id, selectedPhotos)
+        } catch (e) {
+          const uploadWarning = e instanceof Error ? e.message : 'Запись сохранена, но фото не загрузились'
+          navigate(`/diary/entry/${saved.id}`, { state: { uploadWarning } })
+          return
         }
-        navigate(`/diary/entry/${created.id}`)
-      } else {
-        if (!entryId) throw new Error('Entry id is missing')
-        const updated = await updateDiaryEntry(entryId, finalPayload)
-        if (selectedPhotos.length > 0) {
-          await uploadDiaryEntryPhotos(updated.id, selectedPhotos)
-        }
-        navigate(`/diary/entry/${updated.id}`)
       }
+      navigate(`/diary/entry/${saved.id}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка сохранения')
     } finally {
@@ -144,7 +167,7 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
         <div className="journal-eyebrow">{mode === 'create' ? 'Новая страница' : 'Возвращение к странице'}</div>
         <h1 className="journal-title mt-3">{mode === 'create' ? 'Новая запись' : 'Редактирование записи'}</h1>
         <p className="journal-subtitle">
-          Оцените эмоции по шкале от 1 до 10 и оставьте пару строк. Запись можно править и дополнять фото в течение трёх дней.
+          Оцените эмоции по шкале от 1 до 10 и оставьте пару строк. За один день можно создать несколько записей. Редактирование доступно в течение трёх дней.
         </p>
       </div>
 
@@ -307,15 +330,33 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
               multiple
               disabled={entryReadOnly}
               onChange={(e) => {
-                const files = e.currentTarget.files
-                if (!files) {
+                const input = e.currentTarget
+                const files = input.files
+                if (!files || files.length === 0) {
                   setSelectedPhotos([])
                   return
                 }
-                setSelectedPhotos(Array.from(files))
+                const picked = Array.from(files)
+                setPreparingPhotos(true)
+                void compressImageFiles(picked)
+                  .then((compressed) => {
+                    setSelectedPhotos(compressed)
+                  })
+                  .catch(() => {
+                    setSelectedPhotos(picked)
+                  })
+                  .finally(() => {
+                    setPreparingPhotos(false)
+                  })
               }}
             />
-            <div className="text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">{selectedPhotos.length > 0 ? `Выбрано файлов: ${selectedPhotos.length}` : 'Необязательно'}</div>
+            <div className="text-xs text-journal-inkMuted dark:text-journalDark-inkMuted">
+              {preparingPhotos
+                ? 'Подготовка фото…'
+                : selectedPhotos.length > 0
+                  ? `Выбрано файлов: ${selectedPhotos.length}`
+                  : 'Необязательно. Фото автоматически сжимаются для быстрой загрузки.'}
+            </div>
           </label>
 
           {error ? <div className="journal-card border-amber-300 bg-amber-50/80 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">{error}</div> : null}
@@ -352,9 +393,9 @@ export default function DiaryEntryPage({ mode }: { mode: Mode }) {
             <button
               type="submit"
               className="journal-btn-primary min-h-[44px] disabled:opacity-50"
-              disabled={saving || entryReadOnly}
+              disabled={saving || entryReadOnly || preparingPhotos}
             >
-              {saving ? 'Сохранение…' : mode === 'create' ? 'Создать запись' : 'Сохранить'}
+              {preparingPhotos ? 'Подготовка фото…' : saving ? 'Сохранение…' : mode === 'create' ? 'Создать запись' : 'Сохранить'}
             </button>
           </div>
         </form>

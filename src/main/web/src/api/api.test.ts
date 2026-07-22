@@ -66,5 +66,31 @@ describe('api', () => {
 
     await expect(deleteSymptom('symptom-1')).resolves.toBeUndefined()
   })
+
+  it('should preserve API error message and status on failed requests', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      text: async () => JSON.stringify({ message: 'Diary entry for this date already exists' })
+    } as unknown as Response)
+
+    ;(globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock
+
+    await expect(createDiaryEntry({
+      entryDate: '2026-01-01',
+      moodScore: 1,
+      energyScore: 1,
+      productivityScore: 1,
+      stressScore: 1,
+      sleepQualityScore: 1,
+      note: null,
+      isCompleted: false,
+      tagIds: [],
+      symptomIds: []
+    })).rejects.toMatchObject({
+      message: 'Diary entry for this date already exists',
+      status: 409
+    })
+  })
 })
 

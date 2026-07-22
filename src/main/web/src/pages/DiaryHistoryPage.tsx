@@ -74,7 +74,10 @@ export default function DiaryHistoryPage() {
 
         return true
       })
-      .sort((a, b) => (a.entryDate < b.entryDate ? 1 : -1))
+      .sort((a, b) => {
+        if (a.entryDate !== b.entryDate) return a.entryDate < b.entryDate ? 1 : -1
+        return a.createdAt < b.createdAt ? 1 : -1
+      })
   }, [entries, selectedSymptomIds])
 
   const applyDateRange = async () => {

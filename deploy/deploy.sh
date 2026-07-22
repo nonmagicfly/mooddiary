@@ -32,10 +32,12 @@ export DOMAIN
 export PROTOCOL=${PROTOCOL:-https}
 export SSL_CERT_PATH=${SSL_CERT_PATH:-/etc/nginx/ssl/fullchain.pem}
 export SSL_CERT_KEY_PATH=${SSL_CERT_KEY_PATH:-/etc/nginx/ssl/privkey.pem}
+export AUTH_DOMAIN
 envsubst '${DOMAIN} ${PROTOCOL}' < keycloak-realm.json.template > keycloak-realm.json
 envsubst '${DOMAIN} ${AUTH_DOMAIN} ${SSL_CERT_PATH} ${SSL_CERT_KEY_PATH}' < nginx.conf.template > nginx.runtime.conf
 
-echo "Деплой MoodDiary: приложение ${PROTOCOL}://${DOMAIN}, Keycloak ${PROTOCOL}://${AUTH_DOMAIN}..."
+VITE_KEYCLOAK_ISSUER_URI="${PROTOCOL}://${AUTH_DOMAIN}/realms/mooddiary"
+echo "Деплой MoodDiary: приложение ${PROTOCOL}://${DOMAIN}, Keycloak ${VITE_KEYCLOAK_ISSUER_URI}..."
 ${DOCKER_COMPOSE} -f docker-compose.prod.yml up -d --build
 
 echo ""

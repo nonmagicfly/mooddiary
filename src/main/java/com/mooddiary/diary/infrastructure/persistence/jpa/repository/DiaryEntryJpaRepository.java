@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DiaryEntryJpaRepository extends JpaRepository<DiaryEntryJpaEntity, UUID> {
-    boolean existsByUserIdAndEntryDate(UUID userId, LocalDate entryDate);
-
     Optional<DiaryEntryJpaEntity> findByIdAndUserId(UUID id, UUID userId);
 
     List<DiaryEntryJpaEntity> findByUserIdOrderByEntryDateDesc(UUID userId, Pageable pageable);
